@@ -7,16 +7,34 @@ use Illuminate\Http\Request;
 
 class SorteoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $sorteos = Sorteo::latest('fecha')->paginate(10);
+        $fechaDesde = $request->input('fecha_desde');
+        $fechaHasta = $request->input('fecha_hasta');
+        $numero = $request->input('numero');
 
-        return view('empresa.sorteos.index', compact('sorteos'));
+        $sorteos = Sorteo::query()
+            ->when($fechaDesde, fn ($q) => $q->whereDate('fecha', '>=', $fechaDesde))
+            ->when($fechaHasta, fn ($q) => $q->whereDate('fecha', '<=', $fechaHasta))
+            ->when($numero, function ($q) use ($numero) {
+                $q->where(function ($qq) use ($numero) {
+                    foreach (range(1, 6) as $i) {
+                        $qq->orWhere("numero_{$i}", $numero);
+                    }
+                });
+            })
+            ->latest('fecha')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('empresa.sorteos.index', compact('sorteos', 'fechaDesde', 'fechaHasta', 'numero'));
     }
 
     public function create()
     {
-        return view('empresa.sorteos.create');
+        $premioMayorProximo = $this->calcularProximoPremioMayor();
+
+        return view('empresa.sorteos.create', compact('premioMayorProximo'));
     }
 
     public function store(Request $request)
@@ -26,9 +44,12 @@ class SorteoController extends Controller
             'hora' => 'required|date_format:H:i',
         ]);
 
-        Sorteo::create($datos);
+        $premioMayor = $this->calcularProximoPremioMayor();
 
-        return redirect()->route('sorteos.index')->with('exito', 'Sorteo programado correctamente.');
+        Sorteo::create(array_merge($datos, ['premio_mayor' => $premioMayor]));
+
+        return redirect()->route('sorteos.index')
+            ->with('exito', 'Sorteo programado correctamente. Premio mayor: S/ ' . number_format($premioMayor, 2));
     }
 
     public function realizar(Sorteo $sorteo)
@@ -71,13 +92,26 @@ class SorteoController extends Controller
             ->with('exito', 'Sorteo realizado manualmente. Números ganadores: ' . collect($datos['numeros'])->sort()->join(', '));
     }
 
-        public function individual(Sorteo $sorteo)
+    public function individual(Sorteo $sorteo)
     {
         if ($sorteo->estado !== 'pendiente') {
             return back()->with('error', 'Este sorteo ya fue jugado.');
         }
 
         return view('empresa.sorteos.individual', compact('sorteo'));
+    }
+
+    private function calcularProximoPremioMayor(): float
+    {
+        $ultimoSorteo = Sorteo::where('estado', 'cerrado')->latest('fecha')->latest('hora')->first();
+
+        if (! $ultimoSorteo) {
+            return 1000.00;
+        }
+
+        $huboGanadorMayor = $ultimoSorteo->boletos()->where('aciertos', 6)->exists();
+
+        return $huboGanadorMayor ? 1000.00 : (float) $ultimoSorteo->premio_mayor + 200;
     }
 
     private function procesarResultados(Sorteo $sorteo, array $numerosGanadores): void

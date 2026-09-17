@@ -5,21 +5,43 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
+                    <a href="{{ route('welcome') }}">
                         <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
                     </a>
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                <div class="hidden space-x-6 sm:-my-px sm:ml-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+
+                    @if (auth()->user()->esAdministrador())
+                        <x-nav-link :href="route('clientes.index')" :active="request()->routeIs('clientes.*')">
+                            {{ __('Clientes') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('sorteos.index')" :active="request()->routeIs('sorteos.*')">
+                            {{ __('Sorteos') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('compras.index')" :active="request()->routeIs('compras.*')">
+                            {{ __('Compras / Pagos') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('reportes.clientes-frecuentes')" :active="request()->routeIs('reportes.clientes-frecuentes')">
+                            {{ __('Clientes frecuentes') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('reportes.numeros-frecuentes')" :active="request()->routeIs('reportes.numeros-frecuentes')">
+                            {{ __('Números frecuentes') }}
+                        </x-nav-link>
+                    @else
+                        <x-nav-link :href="route('boletos.create')" :active="request()->routeIs('boletos.create')">
+                            {{ __('Jugar') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
             <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
+            <div class="hidden sm:flex sm:items-center sm:ml-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
@@ -70,6 +92,28 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+
+            @if (auth()->user()->esAdministrador())
+                <x-responsive-nav-link :href="route('clientes.index')" :active="request()->routeIs('clientes.*')">
+                    {{ __('Clientes') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('sorteos.index')" :active="request()->routeIs('sorteos.*')">
+                    {{ __('Sorteos') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('compras.index')" :active="request()->routeIs('compras.*')">
+                    {{ __('Compras / Pagos') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('reportes.clientes-frecuentes')" :active="request()->routeIs('reportes.clientes-frecuentes')">
+                    {{ __('Clientes frecuentes') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('reportes.numeros-frecuentes')" :active="request()->routeIs('reportes.numeros-frecuentes')">
+                    {{ __('Números frecuentes') }}
+                </x-responsive-nav-link>
+            @else
+                <x-responsive-nav-link :href="route('boletos.create')" :active="request()->routeIs('boletos.create')">
+                    {{ __('Jugar') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

@@ -41,4 +41,13 @@ class Sorteo extends Model
     {
         return \Carbon\Carbon::parse($this->fecha->format('Y-m-d') . ' ' . $this->hora);
     }
+
+        public function ganadores()
+    {
+        return $this->boletos()
+            ->whereNotNull('premio_ganado')
+            ->with('cliente')
+            ->orderByDesc('aciertos')
+            ->get();
+    }
 }

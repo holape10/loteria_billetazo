@@ -47,14 +47,7 @@
                 </div>
             @else
                 <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                    <p class="mb-4">Panel de administrador:</p>
-                        <div class="flex gap-4 flex-wrap">
-                            <a href="{{ route('clientes.index') }}" class="px-4 py-2 bg-gray-800 text-white rounded">Clientes</a>
-                            <a href="{{ route('sorteos.index') }}" class="px-4 py-2 bg-gray-800 text-white rounded">Sorteos</a>
-                            <a href="{{ route('compras.index') }}" class="px-4 py-2 bg-gray-800 text-white rounded">Compras / Pagos</a>
-                            <a href="{{ route('reportes.clientes-frecuentes') }}" class="px-4 py-2 bg-gray-800 text-white rounded">Clientes frecuentes</a>
-                            <a href="{{ route('reportes.numeros-frecuentes') }}" class="px-4 py-2 bg-gray-800 text-white rounded">Números frecuentes</a>
-                        </div>
+                    <p class="text-gray-600">Bienvenido, administrador. Usa el menú de arriba para gestionar clientes, sorteos, compras y reportes.</p>
                 </div>
             @endif
 

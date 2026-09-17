@@ -9,6 +9,18 @@ use App\Http\Controllers\BoletoController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\ReporteController;
 
+/*Route::get('/', function () {
+    $proximoSorteo = \App\Models\Sorteo::where('estado', 'pendiente')
+        ->orderBy('fecha')->orderBy('hora')->first();
+
+    $ultimoSorteoJugado = \App\Models\Sorteo::where('estado', 'cerrado')
+        ->whereNotNull('numero_1')
+        ->orderByDesc('fecha')->orderByDesc('hora')
+        ->first();
+
+    return view('welcome', compact('proximoSorteo', 'ultimoSorteoJugado'));
+});*/
+
 Route::get('/', function () {
     $proximoSorteo = \App\Models\Sorteo::where('estado', 'pendiente')
         ->orderBy('fecha')->orderBy('hora')->first();
@@ -19,17 +31,7 @@ Route::get('/', function () {
         ->first();
 
     return view('welcome', compact('proximoSorteo', 'ultimoSorteoJugado'));
-});
-/*Route::get('/', function () {
-    return view('welcome');
-});*/
-
-
-/*Route::middleware(['auth', 'admin'])->group(function () {
-    Route::resource('clientes', ClienteController::class);
-    Route::resource('sorteos', SorteoController::class)->except(['show', 'edit', 'update', 'destroy']);
-    Route::post('sorteos/{sorteo}/realizar', [SorteoController::class, 'realizar'])->name('sorteos.realizar');
-});*/
+})->name('welcome');
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('clientes', ClienteController::class);
@@ -46,11 +48,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('reportes/clientes-frecuentes', [ReporteController::class, 'clientesFrecuentes'])->name('reportes.clientes-frecuentes');
     Route::get('reportes/numeros-frecuentes', [ReporteController::class, 'numerosFrecuentes'])->name('reportes.numeros-frecuentes');
 });
-
-/*Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');*/
-
 
 Route::get('/dashboard', function () {
     $usuario = auth()->user();
@@ -79,9 +76,5 @@ Route::middleware('auth')->group(function () {
 
 });
 
-/*Route::middleware(['auth'])->group(function () {
-    Route::get('/jugar', [BoletoController::class, 'create'])->name('boletos.create');
-    Route::post('/jugar/{sorteo}', [BoletoController::class, 'store'])->name('boletos.store');
-});*/
 
 require __DIR__.'/auth.php';

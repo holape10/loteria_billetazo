@@ -6,6 +6,9 @@
     <div class="py-6">
         <div class="max-w-xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-sm sm:rounded-lg p-6">
+                <div class="mb-4 p-3 bg-dorado-100 border border-dorado-400 rounded text-sm">
+                    💰 El premio mayor de este sorteo será: <strong>S/ {{ number_format($premioMayorProximo, 2) }}</strong>
+                </div>
                 <form action="{{ route('sorteos.store') }}" method="POST">
                     @csrf
 

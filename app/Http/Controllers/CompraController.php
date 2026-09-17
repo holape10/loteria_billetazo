@@ -3,14 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Models\Compra;
+use Illuminate\Http\Request;
 
 class CompraController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $compras = Compra::with(['cliente', 'sorteo'])->latest()->paginate(10);
+        $busqueda = $request->input('buscar');
 
-        return view('empresa.compras.index', compact('compras'));
+        $compras = Compra::with(['cliente', 'sorteo'])
+            ->when($busqueda, function ($query, $busqueda) {
+                $query->whereHas('cliente', function ($q) use ($busqueda) {
+                    $q->where('nombre', 'like', "%{$busqueda}%")
+                        ->orWhere('dni', 'like', "%{$busqueda}%")
+                        ->orWhere('celular', 'like', "%{$busqueda}%");
+                });
+            })
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('empresa.compras.index', compact('compras', 'busqueda'));
     }
 
     public function aprobar(Compra $compra)
