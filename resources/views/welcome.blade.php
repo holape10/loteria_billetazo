@@ -95,6 +95,19 @@
         </div>
     </section>
 
+        @if ($proximoSorteo)
+        <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
+            <div class="bg-gradient-to-r from-yellow-600 via-dorado-500 to-yellow-600 rounded-2xl p-6 sm:p-8 text-center text-black shadow-xl border-4 border-dorado-300">
+                @if ($huboGanadorMayorSemanaPasada === false)
+                    <p class="text-sm sm:text-base font-semibold mb-1">🔥 ¡Esta semana no hubo ganador del premio mayor! El pozo sigue creciendo</p>
+                @endif
+                <p class="text-xs uppercase font-bold tracking-widest">Pozo acumulado — Próximo sorteo</p>
+                <p class="text-4xl sm:text-6xl font-extrabold my-2">S/ {{ number_format($proximoSorteo->premio_mayor, 2) }}</p>
+                <p class="text-xs sm:text-sm">Sube S/ 200 cada semana que nadie hace los 6 aciertos</p>
+            </div>
+        </section>
+    @endif
+
         @if ($ultimoSorteoJugado)
         <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 -mt-2 mb-4">
             <div class="bg-gradient-to-r from-dorado-600 to-dorado-500 rounded-xl p-5 text-center text-black shadow-lg">

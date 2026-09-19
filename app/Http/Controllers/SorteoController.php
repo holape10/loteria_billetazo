@@ -101,6 +101,41 @@ class SorteoController extends Controller
         return view('empresa.sorteos.individual', compact('sorteo'));
     }
 
+        public function verificarParcial(Request $request, Sorteo $sorteo)
+    {
+        $datos = $request->validate([
+            'numeros' => 'required|array',
+            'numeros.*' => 'integer|min:1|max:60',
+        ]);
+
+        $extraidos = $datos['numeros'];
+
+        $boletos = $sorteo->boletos()
+            ->whereHas('compra', fn ($q) => $q->where('estado_pago', 'pagado'))
+            ->with('cliente')
+            ->get();
+
+        $enCarrera = [];
+
+        foreach ($boletos as $boleto) {
+            $numerosBoleto = [
+                $boleto->numero_1, $boleto->numero_2, $boleto->numero_3,
+                $boleto->numero_4, $boleto->numero_5, $boleto->numero_6,
+            ];
+
+            $coincidencias = count(array_intersect($numerosBoleto, $extraidos));
+
+            if ($coincidencias === count($extraidos)) {
+                $enCarrera[] = [
+                    'cliente' => $boleto->cliente->nombre,
+                    'coincidencias' => $coincidencias,
+                ];
+            }
+        }
+
+        return response()->json(['en_carrera' => $enCarrera]);
+    }
+
     private function calcularProximoPremioMayor(): float
     {
         $ultimoSorteo = Sorteo::where('estado', 'cerrado')->latest('fecha')->latest('hora')->first();

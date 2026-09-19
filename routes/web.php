@@ -9,17 +9,6 @@ use App\Http\Controllers\BoletoController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\ReporteController;
 
-/*Route::get('/', function () {
-    $proximoSorteo = \App\Models\Sorteo::where('estado', 'pendiente')
-        ->orderBy('fecha')->orderBy('hora')->first();
-
-    $ultimoSorteoJugado = \App\Models\Sorteo::where('estado', 'cerrado')
-        ->whereNotNull('numero_1')
-        ->orderByDesc('fecha')->orderByDesc('hora')
-        ->first();
-
-    return view('welcome', compact('proximoSorteo', 'ultimoSorteoJugado'));
-});*/
 
 Route::get('/', function () {
     $proximoSorteo = \App\Models\Sorteo::where('estado', 'pendiente')
@@ -30,7 +19,11 @@ Route::get('/', function () {
         ->orderByDesc('fecha')->orderByDesc('hora')
         ->first();
 
-    return view('welcome', compact('proximoSorteo', 'ultimoSorteoJugado'));
+    $huboGanadorMayorSemanaPasada = $ultimoSorteoJugado
+        ? $ultimoSorteoJugado->boletos()->where('aciertos', 6)->exists()
+        : null;
+
+    return view('welcome', compact('proximoSorteo', 'ultimoSorteoJugado', 'huboGanadorMayorSemanaPasada'));
 })->name('welcome');
 
 Route::middleware(['auth', 'admin'])->group(function () {
@@ -40,6 +33,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('sorteos/{sorteo}/realizar-manual', [SorteoController::class, 'formularioManual'])->name('sorteos.realizar-manual.form');
     Route::post('sorteos/{sorteo}/realizar-manual', [SorteoController::class, 'realizarManual'])->name('sorteos.realizar-manual');
     Route::get('sorteos/{sorteo}/individual', [SorteoController::class, 'individual'])->name('sorteos.individual');
+    Route::post('sorteos/{sorteo}/verificar-parcial', [SorteoController::class, 'verificarParcial'])->name('sorteos.verificar-parcial');
     
     Route::get('compras', [CompraController::class, 'index'])->name('compras.index');
     Route::post('compras/{compra}/aprobar', [CompraController::class, 'aprobar'])->name('compras.aprobar');

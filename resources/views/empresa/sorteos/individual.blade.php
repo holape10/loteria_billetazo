@@ -26,6 +26,11 @@
                     Sacar número 1
                 </button>
 
+                <div id="en-vivo" class="hidden mt-6 bg-gray-900 border border-dorado-600 rounded-xl p-4 text-left">
+                    <p class="text-dorado-400 font-semibold text-sm mb-2 text-center">🔴 En vivo — jugadores en carrera</p>
+                    <div id="en-vivo-lista" class="text-sm space-y-1"></div>
+                </div>
+
                 <form action="{{ route('sorteos.realizar-manual', $sorteo) }}" method="POST" id="form-confirmar" onsubmit="return confirm('¿Confirmar estos 6 números como ganadores?')">
                     @csrf
                     <div id="numeros-hidden"></div>
@@ -93,6 +98,10 @@
                 actualizarListaExtraidos();
                 actualizarInputsOcultos();
 
+                if (extraidos.length >= 4) {
+                    verificarEnVivo();
+                }
+
                 if (extraidos.length < maxNumeros) {
                     document.getElementById('btn-extraer').textContent = `Sacar número ${extraidos.length + 1}`;
                     document.getElementById('btn-extraer').disabled = false;
@@ -124,6 +133,36 @@
                 input.value = n;
                 contenedor.appendChild(input);
             });
+        }
+
+        function verificarEnVivo() {
+            fetch('{{ route('sorteos.verificar-parcial', $sorteo) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                },
+                body: JSON.stringify({ numeros: extraidos }),
+            })
+                .then(res => res.json())
+                .then(data => {
+                    const contenedor = document.getElementById('en-vivo');
+                    const lista = document.getElementById('en-vivo-lista');
+                    lista.innerHTML = '';
+
+                    if (data.en_carrera.length === 0) {
+                        lista.innerHTML = '<p class="text-gray-400">Nadie en carrera por ahora.</p>';
+                    } else {
+                        data.en_carrera.forEach(item => {
+                            const p = document.createElement('p');
+                            p.textContent = `🎯 ${item.cliente} — ${item.coincidencias} aciertos hasta ahora`;
+                            lista.appendChild(p);
+                        });
+                    }
+
+                    contenedor.classList.remove('hidden');
+                })
+                .catch(() => {});
         }
     </script>
 </x-app-layout>
