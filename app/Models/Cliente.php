@@ -19,6 +19,7 @@ class Cliente extends Model
         'correo',
         'juegos',
         'estado',
+        'jugadas_gratis',
     ];
 
     protected $casts = [

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Gana Dinero con El Billetazo</title>
+    <title>Gana con El Billetazo</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('images/favicon.ico') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -83,7 +83,7 @@
     <!-- Hero -->
     <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
         <h1 class="text-4xl sm:text-6xl font-extrabold text-dorado-400 leading-tight">
-            Gana Dinero <span class="text-white">con El Billetazo</span>
+            Gana <span class="text-white">con El Billetazo</span>
         </h1>
         <p class="mt-4 text-gray-300 text-lg max-w-2xl mx-auto">
             El sorteo semanal más fácil y confiable del Perú. Elige tus 6 números, paga con Yape o Plin, y gana todos los domingos.
@@ -150,28 +150,36 @@
         </div>
     </section>
 
-    <!-- Premios -->
+        <!-- Premios -->
     <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <h2 class="text-2xl sm:text-3xl font-bold text-center text-dorado-400 mb-10">Premios</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
-            <div class="bg-gradient-to-b from-dorado-500 to-dorado-700 rounded-xl p-6 text-black">
-                <p class="text-sm font-semibold">6 aciertos</p>
-                <p class="text-3xl font-extrabold">S/ 1,000</p>
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 sm:gap-6 text-center">
+            <div class="bg-gradient-to-b from-dorado-500 to-dorado-700 rounded-xl p-6 text-black col-span-2 sm:col-span-1">
+                <p class="text-base sm:text-lg font-semibold">6 aciertos</p>
+                <p class="text-4xl sm:text-4xl font-extrabold">S/ 1,000</p>
             </div>
             <div class="bg-gray-800 rounded-xl p-6 border border-dorado-600">
-                <p class="text-sm font-semibold text-dorado-300">5 aciertos</p>
-                <p class="text-3xl font-extrabold text-white">S/ 100</p>
+                <p class="text-base sm:text-lg font-semibold text-dorado-300">5 aciertos</p>
+                <p class="text-3xl sm:text-4xl font-extrabold text-white">S/ 100</p>
             </div>
             <div class="bg-gray-800 rounded-xl p-6 border border-dorado-600">
-                <p class="text-sm font-semibold text-dorado-300">4 aciertos</p>
-                <p class="text-3xl font-extrabold text-white">S/ 50</p>
+                <p class="text-base sm:text-lg font-semibold text-dorado-300">4 aciertos</p>
+                <p class="text-3xl sm:text-4xl font-extrabold text-white">S/ 50</p>
+            </div>
+            <div class="bg-gray-800 rounded-xl p-6 border border-dorado-600">
+                <p class="text-base sm:text-lg font-semibold text-dorado-300">3 aciertos</p>
+                <p class="text-3xl sm:text-4xl font-extrabold text-white">S/ 10</p>
+            </div>
+            <div class="bg-gray-800 rounded-xl p-6 border border-dorado-600">
+                <p class="text-base sm:text-lg font-semibold text-dorado-300">2 aciertos</p>
+                <p class="text-2xl sm:text-3xl font-extrabold text-white">Jugada gratis</p>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
     <footer class="bg-black border-t border-dorado-700 py-8 text-center text-gray-500 text-sm">
-        &copy; {{ date('Y') }} Gana Dinero con El Billetazo. Todos los derechos reservados.
+        &copy; {{ date('Y') }} Gana con El Billetazo. Todos los derechos reservados.
     </footer>
 
 </body>

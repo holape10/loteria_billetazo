@@ -1,11 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Compras / Pagos</h2>
+        <h2 class="font-semibold text-xl text-dorado-400 leading-tight">Compras / Pagos</h2>
     </x-slot>
 
     <div class="py-6">
         <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white shadow-sm sm:rounded-lg p-6">
+            <div class="bg-gray-900 text-white shadow-sm sm:rounded-lg p-6 border border-dorado-700">
 
                 @if (session('exito'))
                     <div class="mb-4 p-3 bg-green-100 text-green-700 rounded">{{ session('exito') }}</div>

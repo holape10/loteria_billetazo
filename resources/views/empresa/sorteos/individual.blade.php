@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Sorteo individual al azar — {{ $sorteo->fecha->format('d/m/Y') }}</h2>
+        <h2 class="font-semibold text-xl text-dorado-400 leading-tight">Sorteo individual al azar — {{ $sorteo->fecha->format('d/m/Y') }}</h2>
     </x-slot>
 
     <div class="py-6">
@@ -9,7 +9,7 @@
 
                 <div class="mb-4">
                     <p class="text-sm text-gray-400 uppercase tracking-wide">Número extraído</p>
-                    <div id="resultado-actual" class="text-6xl font-extrabold text-dorado-400 my-2">?</div>
+                        <div id="resultado-actual" class="text-8xl sm:text-9xl font-extrabold text-dorado-400 my-2">?</div>
                 </div>
 
                 <div id="lista-extraidos" class="mb-6 min-h-[3rem]"></div>
@@ -98,7 +98,7 @@
                 actualizarListaExtraidos();
                 actualizarInputsOcultos();
 
-                if (extraidos.length >= 4) {
+                if (extraidos.length >= 3) {
                     verificarEnVivo();
                 }
 
@@ -117,7 +117,7 @@
             contenedor.innerHTML = '';
             extraidos.forEach(n => {
                 const span = document.createElement('span');
-                span.className = 'inline-flex items-center justify-center w-10 h-10 rounded-full bg-dorado-500 text-black font-bold mx-1';
+                    span.className = 'inline-flex items-center justify-center w-16 h-16 rounded-full bg-dorado-500 text-black font-extrabold text-2xl mx-1.5 shadow-lg';
                 span.textContent = n;
                 contenedor.appendChild(span);
             });

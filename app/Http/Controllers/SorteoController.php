@@ -200,6 +200,22 @@ class SorteoController extends Controller
                     $boleto->update(['premio_ganado' => $premioCadaUno]);
                 }
             }
+
+            $ganadoresTres = $boletos->fresh()->where('aciertos', 3);
+            if ($ganadoresTres->count() > 0) {
+                $premioCadaUno = round($sorteo->premio_tres_aciertos / $ganadoresTres->count(), 2);
+                foreach ($ganadoresTres as $boleto) {
+                    $boleto->update(['premio_ganado' => $premioCadaUno]);
+                }
+            }
+
+            $ganadoresDos = $boletos->fresh()->where('aciertos', 2);
+            if ($ganadoresDos->count() > 0) {
+                foreach ($ganadoresDos as $boleto) {
+                    $boleto->update(['jugada_gratis_ganada' => true]);
+                    $boleto->cliente->increment('jugadas_gratis');
+                }
+            }
         }
 
         $sorteo->update(['estado' => 'cerrado']);

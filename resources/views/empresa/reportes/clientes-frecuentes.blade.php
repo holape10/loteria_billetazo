@@ -1,11 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Clientes frecuentes</h2>
+        <h2 class="font-semibold text-xl text-dorado-400 leading-tight">Clientes frecuentes</h2>
     </x-slot>
 
     <div class="py-6">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white shadow-sm sm:rounded-lg p-6">
+            <div class="bg-gray-900 text-white shadow-sm sm:rounded-lg p-6 border border-dorado-700">
 
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>

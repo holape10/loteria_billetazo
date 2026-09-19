@@ -24,6 +24,7 @@ class Boleto extends Model
         'monto',
         'aciertos',
         'premio_ganado',
+        'jugada_gratis_ganada',
     ];
 
     public function cliente()
@@ -40,4 +41,7 @@ class Boleto extends Model
     {
         return $this->belongsTo(Compra::class);
     }
+    protected $casts = [
+        'jugada_gratis_ganada' => 'boolean',
+    ];
 }

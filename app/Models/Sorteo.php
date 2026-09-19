@@ -25,6 +25,7 @@ class Sorteo extends Model
         'premio_cuatro_aciertos',        
         'estado',
         'hora',
+        'premio_tres_aciertos',
     ];
 
 
@@ -42,10 +43,12 @@ class Sorteo extends Model
         return \Carbon\Carbon::parse($this->fecha->format('Y-m-d') . ' ' . $this->hora);
     }
 
-        public function ganadores()
+         public function ganadores()
     {
         return $this->boletos()
-            ->whereNotNull('premio_ganado')
+            ->where(function ($q) {
+                $q->whereNotNull('premio_ganado')->orWhere('jugada_gratis_ganada', true);
+            })
             ->with('cliente')
             ->orderByDesc('aciertos')
             ->get();
