@@ -25,20 +25,53 @@ class LoginRequest extends FormRequest
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
-    public function rules(): array
+
+        public function rules(): array
+    {
+        return [
+            'email' => ['required', 'string'],
+            'password' => ['required', 'string'],
+        ];
+    }
+    /*public function rules(): array
     {
         return [
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
         ];
-    }
+    }*/
 
     /**
      * Attempt to authenticate the request's credentials.
      *
      * @throws ValidationException
      */
-    public function authenticate(): void
+
+        public function authenticate(): void
+    {
+        $this->ensureIsNotRateLimited();
+
+        $identificador = $this->input('email');
+        $correo = $identificador;
+
+        // Si el usuario ingresó un DNI (8 dígitos), buscamos el correo asociado a esa cuenta
+        if (preg_match('/^\d{8}$/', $identificador)) {
+            $cliente = \App\Models\Cliente::where('dni', $identificador)->first();
+            $usuario = $cliente ? \App\Models\User::where('cliente_id', $cliente->id)->first() : null;
+            $correo = $usuario?->email;
+        }
+
+        if (! $correo || ! Auth::attempt(['email' => $correo, 'password' => $this->input('password')], $this->boolean('remember'))) {
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => trans('auth.failed'),
+            ]);
+        }
+
+        RateLimiter::clear($this->throttleKey());
+    }
+    /*public function authenticate(): void
     {
         $this->ensureIsNotRateLimited();
 
@@ -51,7 +84,7 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
-    }
+    }*/
 
     /**
      * Ensure the login request is not rate limited.

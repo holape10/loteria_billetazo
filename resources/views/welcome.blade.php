@@ -178,8 +178,16 @@
     </section>
 
     <!-- Footer -->
+        <!-- Footer -->
     <footer class="bg-black border-t border-dorado-700 py-8 text-center text-gray-500 text-sm">
-        &copy; {{ date('Y') }} Gana con El Billetazo. Todos los derechos reservados.
+        <p>&copy; {{ date('Y') }} Gana con El Billetazo. Todos los derechos reservados.</p>
+        <p class="mt-2">
+            <a href="{{ route('terminos') }}" class="text-dorado-400 hover:text-dorado-300 underline">Términos y Condiciones</a>
+        </p>
+        <p class="mt-2">
+            Desarrollado por
+            <a href="https://tushpa.app" target="_blank" rel="noopener" class="text-dorado-400 hover:text-dorado-300 font-semibold underline">TUSHPA</a>
+        </p>
     </footer>
 
 </body>

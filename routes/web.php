@@ -72,5 +72,9 @@ Route::middleware('auth')->group(function () {
 
 });
 
+Route::get('/terminos', function () {
+    return view('legal.terminos');
+})->name('terminos');
+
 
 require __DIR__.'/auth.php';
