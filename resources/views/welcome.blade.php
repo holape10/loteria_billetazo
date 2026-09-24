@@ -103,7 +103,7 @@
                 @endif
                 <p class="text-xs uppercase font-bold tracking-widest">Pozo acumulado — Próximo sorteo</p>
                 <p class="text-4xl sm:text-6xl font-extrabold my-2">S/ {{ number_format($proximoSorteo->premio_mayor, 2) }}</p>
-                <p class="text-xs sm:text-sm">Sube S/ 200 cada semana que nadie hace los 6 aciertos</p>
+                <p class="text-xs sm:text-sm">Sube S/ 200 cada semana si no hay ganadores con 6 aciertos</p>
             </div>
         </section>
     @endif
@@ -139,7 +139,7 @@
                 <div class="bg-gray-900 rounded-xl p-6 border border-dorado-700">
                     <div class="text-dorado-400 text-3xl mb-3">2️⃣</div>
                     <h3 class="font-semibold text-lg mb-2">Elige tus números</h3>
-                    <p class="text-gray-400 text-sm">Selecciona 6 números del 1 al 60 por solo S/ 1 el boleto.</p>
+                    <p class="text-gray-400 text-sm">Selecciona 6 números del 1 al 60 por solo S/ 3 el boleto.</p>
                 </div>
                 <div class="bg-gray-900 rounded-xl p-6 border border-dorado-700">
                     <div class="text-dorado-400 text-3xl mb-3">3️⃣</div>

@@ -13,6 +13,9 @@
             @if (auth()->user()->rol === 'jugador')
                 <div class="bg-gray-900 text-white shadow-sm sm:rounded-lg p-6 mb-6 border border-dorado-700">
                     <a href="{{ route('boletos.create') }}" class="inline-block px-4 py-2 bg-dorado-500 hover:bg-dorado-600 text-black font-semibold rounded text-lg">🎟️ Jugar ahora</a>
+                    @if ($creditosGratis > 0)
+                        <span class="ml-3 text-dorado-400 font-semibold">🎁 Tienes {{ $creditosGratis }} jugada(s) gratis</span>
+                    @endif
                 </div>
 
                 <div class="bg-gray-900 text-white shadow-sm sm:rounded-lg p-6 border border-dorado-700">

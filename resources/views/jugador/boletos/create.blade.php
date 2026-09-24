@@ -15,6 +15,12 @@
                     </div>
                 @endif
 
+                @if ($creditosDisponibles > 0)
+                    <div class="bg-gradient-to-r from-dorado-600 to-dorado-500 text-black rounded-xl p-4 mb-6 text-center font-semibold">
+                        🎁 ¡Tienes {{ $creditosDisponibles }} jugada(s) gratis disponible(s)! Marca la casilla en la jugada que quieras canjear.
+                    </div>
+                @endif
+
                 <!-- Tarjeta de pago con QR -->
                 <div class="bg-gray-900 border border-dorado-600 rounded-xl p-4 sm:p-6 mb-6 flex flex-col sm:flex-row items-center gap-5 sm:gap-6 text-center sm:text-left">
                     <img src="{{ asset('images/qr-billetazo.png') }}" alt="QR de pago Yape/Plin"
@@ -42,7 +48,7 @@
                             <span id="total-jugadas">1</span> jugada(s)
                         </span>
                         <span class="text-xl sm:text-2xl font-extrabold">
-                            S/ <span id="total-monto">1.00</span>
+                            S/ <span id="total-monto">3.00</span>
                         </span>
                     </div>
 
@@ -87,14 +93,21 @@
                 @endfor
             </div>
             <div class="numeros-hidden"></div>
-            <div class="flex justify-between items-center">
+            <div class="gratis-hidden"></div>
+            <div class="flex justify-between items-center flex-wrap gap-2">
                 <p class="text-xs text-gray-400">Seleccionados: <span class="contador">0</span> / 6</p>
-                <button type="button" class="btn-azar px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-md text-xs font-semibold">🎲 Al azar</button>
+                <div class="flex items-center gap-3">
+                    <label class="checkbox-gratis-wrapper hidden flex items-center gap-1.5 text-xs text-dorado-300 font-semibold">
+                        <input type="checkbox" class="checkbox-gratis"> 🎁 Usar jugada gratis
+                    </label>
+                    <button type="button" class="btn-azar px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-md text-xs font-semibold">🎲 Al azar</button>
+                </div>
             </div>
         </div>
     </template>
 
     <script>
+        const creditosDisponibles = {{ $creditosDisponibles }};
         let totalJugadas = 0;
 
         function crearJugada() {
@@ -115,8 +128,36 @@
 
         function actualizarTotales() {
             const bloques = document.querySelectorAll('.jugada-block');
+            const marcadosGratis = document.querySelectorAll('.checkbox-gratis:checked').length;
+
             document.getElementById('total-jugadas').textContent = bloques.length;
-            document.getElementById('total-monto').textContent = (bloques.length * 1).toFixed(2);
+            document.getElementById('total-monto').textContent = ((bloques.length - marcadosGratis) * 3).toFixed(2);
+
+            document.querySelectorAll('.checkbox-gratis-wrapper').forEach(wrapper => {
+                const checkbox = wrapper.querySelector('.checkbox-gratis');
+
+                if (creditosDisponibles <= 0) {
+                    wrapper.classList.add('hidden');
+                    return;
+                }
+
+                wrapper.classList.remove('hidden');
+                checkbox.disabled = ! checkbox.checked && marcadosGratis >= creditosDisponibles;
+            });
+        }
+
+        function actualizarGratisHidden(bloque) {
+            const checkbox = bloque.querySelector('.checkbox-gratis');
+            const contenedor = bloque.querySelector('.gratis-hidden');
+            contenedor.innerHTML = '';
+
+            if (checkbox.checked) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = `gratis[${bloque.dataset.indice}]`;
+                input.value = '1';
+                contenedor.appendChild(input);
+            }
         }
 
         function seleccionarBoton(btn) {
@@ -184,6 +225,14 @@
 
             if (e.target.classList.contains('btn-quitar-jugada')) {
                 bloque.remove();
+                actualizarTotales();
+            }
+        });
+
+        document.getElementById('contenedor-jugadas').addEventListener('change', function (e) {
+            if (e.target.classList.contains('checkbox-gratis')) {
+                const bloque = e.target.closest('.jugada-block');
+                actualizarGratisHidden(bloque);
                 actualizarTotales();
             }
         });

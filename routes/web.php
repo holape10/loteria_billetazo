@@ -46,12 +46,14 @@ Route::middleware(['auth', 'admin'])->group(function () {
 Route::get('/dashboard', function () {
     $usuario = auth()->user();
     $boletos = collect();
+    $creditosGratis = 0;
 
     if ($usuario->cliente) {
         $boletos = $usuario->cliente->boletos()->with(['sorteo', 'compra'])->latest()->paginate(10);
+        $creditosGratis = $usuario->cliente->jugadas_gratis;
     }
 
-    return view('dashboard', compact('boletos'));
+    return view('dashboard', compact('boletos', 'creditosGratis'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 
