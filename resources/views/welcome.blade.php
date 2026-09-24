@@ -953,9 +953,6 @@
                 @endforeach
             </div>
             
-            <p class="text-xs mt-4 text-dorado-900 font-semibold animate-pulse">
-                 Los números giran cada 3 segundos
-            </p>
         </div>
     </section>
 
