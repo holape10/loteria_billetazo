@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Boleto;
 use App\Models\Cliente;
+use App\Models\Compra;
 use App\Models\Sorteo;
+use Illuminate\Http\Request;
 
 class ReporteController extends Controller
 {
@@ -44,5 +47,34 @@ class ReporteController extends Controller
             'conteo' => $conteo,
             'totalSorteos' => $sorteosJugados->count(),
         ]);
+    }
+
+    public function financiero(Request $request)
+    {
+        $fechaDesde = $request->input('fecha_desde');
+        $fechaHasta = $request->input('fecha_hasta');
+
+        $sorteoIds = Sorteo::query()
+            ->when($fechaDesde, fn ($q) => $q->whereDate('fecha', '>=', $fechaDesde))
+            ->when($fechaHasta, fn ($q) => $q->whereDate('fecha', '<=', $fechaHasta))
+            ->pluck('id');
+
+        $totalBoletos = Boleto::whereIn('sorteo_id', $sorteoIds)
+            ->whereHas('compra', fn ($q) => $q->where('estado_pago', 'pagado'))
+            ->count();
+
+        $totalRecaudado = Compra::whereIn('sorteo_id', $sorteoIds)
+            ->where('estado_pago', 'pagado')
+            ->sum('monto_total');
+
+        $totalPremiosPagados = Boleto::whereIn('sorteo_id', $sorteoIds)
+            ->whereNotNull('premio_ganado')
+            ->sum('premio_ganado');
+
+        $balance = $totalRecaudado - $totalPremiosPagados;
+
+        return view('empresa.reportes.financiero', compact(
+            'fechaDesde', 'fechaHasta', 'totalBoletos', 'totalRecaudado', 'totalPremiosPagados', 'balance'
+        ));
     }
 }

@@ -29,6 +29,9 @@
                         <x-nav-link :href="route('reportes.numeros-frecuentes')" :active="request()->routeIs('reportes.numeros-frecuentes')">
                             {{ __('Números frecuentes') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('reportes.financiero')" :active="request()->routeIs('reportes.financiero')">
+                            {{ __('Reporte Financiero') }}
+                        </x-nav-link>
                     @else
                         <x-nav-link :href="route('boletos.create')" :active="request()->routeIs('boletos.create')">
                             {{ __('Jugar') }}
@@ -98,6 +101,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('reportes.numeros-frecuentes')" :active="request()->routeIs('reportes.numeros-frecuentes')">
                     {{ __('Números frecuentes') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('reportes.financiero')" :active="request()->routeIs('reportes.financiero')">
+                    {{ __('Reporte Financiero') }}
                 </x-responsive-nav-link>
             @else
                 <x-responsive-nav-link :href="route('boletos.create')" :active="request()->routeIs('boletos.create')">

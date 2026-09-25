@@ -8,6 +8,9 @@ use App\Http\Controllers\SorteoController;
 use App\Http\Controllers\BoletoController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\GanadorController;
+use App\Http\Controllers\ComprobanteController;
+
 
 
 Route::get('/', function () {
@@ -41,7 +44,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::get('reportes/clientes-frecuentes', [ReporteController::class, 'clientesFrecuentes'])->name('reportes.clientes-frecuentes');
     Route::get('reportes/numeros-frecuentes', [ReporteController::class, 'numerosFrecuentes'])->name('reportes.numeros-frecuentes');
+    Route::get('reportes/financiero', [ReporteController::class, 'financiero'])->name('reportes.financiero');
 });
+
+Route::get('compras/{compra}/comprobante', [ComprobanteController::class, 'ver'])->name('compras.comprobante');
+Route::get('compras/{compra}/comprobante/pdf', [ComprobanteController::class, 'pdf'])->name('compras.comprobante.pdf');
+
+Route::get('/ganadores', [GanadorController::class, 'index'])->name('ganadores.index');
 
 Route::get('/dashboard', function () {
     $usuario = auth()->user();

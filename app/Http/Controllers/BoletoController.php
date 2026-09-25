@@ -99,6 +99,7 @@ class BoletoController extends Controller
             ? "¡Listo! {$cantidadJugadas} jugada(s) gratis registrada(s) para el sorteo."
             : "Compra registrada: {$cantidadJugadas} jugada(s) por S/ {$montoTotal}, en espera de validación de pago.";
 
-        return redirect()->route('dashboard')->with('exito', $mensaje);
+        //return redirect()->route('dashboard')->with('exito', $mensaje);
+          return redirect()->route('compras.comprobante', $compra)->with('exito', $mensaje);
     }
 }

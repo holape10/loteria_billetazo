@@ -58,6 +58,11 @@
 
                     <div class="mt-4">{{ $boletos->links() }}</div>
                 </div>
+
+                <div class="mt-6 text-center text-gray-400 text-sm border-t border-gray-800 pt-4">
+                    ¿Necesitas ayuda? Escríbenos a
+                    <a href="mailto:loteriabilletazo@gmail.com" class="text-dorado-400 underline">loteriabilletazo@gmail.com</a>
+                </div>
             @else
                 <div class="bg-gray-900 text-white shadow-sm sm:rounded-lg p-6 border border-dorado-700">
                     <p class="text-gray-300 text-lg">Bienvenido, administrador. Usa el menú de arriba para gestionar clientes, sorteos, compras y reportes.</p>

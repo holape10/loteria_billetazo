@@ -57,7 +57,7 @@
                                         @endif
                                     </td>
                                     <td class="py-2 pr-4">{{ ucfirst($compra->estado_pago) }}</td>
-                                    <td class="py-2">
+                                                                        <td class="py-2">
                                         @if ($compra->estado_pago === 'pendiente')
                                             <form action="{{ route('compras.aprobar', $compra) }}" method="POST" class="inline">
                                                 @csrf
@@ -68,6 +68,8 @@
                                                 <button type="submit" class="text-red-700 font-semibold">Rechazar</button>
                                             </form>
                                         @endif
+                                        <a href="{{ route('compras.comprobante', $compra) }}" target="_blank" class="text-blue-600 font-semibold ml-2">👁️ Ver</a>
+                                        <a href="{{ route('compras.comprobante.pdf', $compra) }}" target="_blank" class="text-dorado-600 font-semibold ml-2">📄 PDF</a>
                                     </td>
                                 </tr>
                             @empty

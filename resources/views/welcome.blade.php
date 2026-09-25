@@ -7,703 +7,152 @@
     <link rel="icon" type="image/x-icon" href="{{ asset('images/favicon.ico') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
-    <style>
+        <style>
         /* ==========================================
-           ANIMACIONES GENERALES DE LA PÁGINA
+           ANIMACIONES DE ENTRADA (una sola vez, livianas)
            ========================================== */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
 
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes slideInLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes scaleIn {
-            from {
-                opacity: 0;
-                transform: scale(0.8);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        @keyframes glow {
-            0%, 100% {
-                text-shadow: 0 0 10px rgba(251, 191, 36, 0.5),
-                            0 0 20px rgba(251, 191, 36, 0.3),
-                            0 0 30px rgba(251, 191, 36, 0.1);
-            }
-            50% {
-                text-shadow: 0 0 20px rgba(251, 191, 36, 0.8),
-                            0 0 30px rgba(251, 191, 36, 0.6),
-                            0 0 40px rgba(251, 191, 36, 0.4);
-            }
-        }
-
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0px);
-            }
-            50% {
-                transform: translateY(-10px);
-            }
-        }
-
-        @keyframes flip-card {
-            0% { transform: rotateY(0deg); }
-            100% { transform: rotateY(360deg); }
-        }
-
-        /* Clase para animaciones al hacer scroll */
-        .animate-on-scroll {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s ease-out;
-        }
-
-        .animate-on-scroll.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        .animate-on-scroll { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+        .animate-on-scroll.visible { opacity: 1; transform: translateY(0); }
 
         /* ==========================================
-           ANIMACIONES DEL PREMIO MAYOR (EXPLOSIVO)
+           PREMIO ACUMULADO (versión liviana)
            ========================================== */
-        .jackpot-container {
-            position: relative;
-            padding: 20px;
-        }
-        
-        /* Anillos de explosión */
-        .explosion-ring {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border-radius: 50%;
-            border: 3px solid #fbbf24;
-            animation: explode-ring 3s ease-out infinite;
-            pointer-events: none;
-        }
-        
-        .ring-1 { width: 100%; height: 100%; animation-delay: 0s; }
-        .ring-2 { width: 100%; height: 100%; animation-delay: 1s; border-color: #f59e0b; }
-        .ring-3 { width: 100%; height: 100%; animation-delay: 2s; border-color: #d97706; }
-        
-        @keyframes explode-ring {
-            0% { width: 100%; height: 100%; opacity: 1; border-width: 3px; }
-            100% { width: 150%; height: 150%; opacity: 0; border-width: 0px; }
-        }
-        
-        /* Badge JACKPOT */
+        .jackpot-container { position: relative; padding: 20px; }
+
         .jackpot-badge {
-            position: absolute;
-            top: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 50;
-            animation: badge-bounce 1s ease-in-out infinite;
+            position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
+            z-index: 10;
         }
-        
+
         .jackpot-text {
-            background: linear-gradient(90deg, #dc2626, #fbbf24, #dc2626);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-size: 1.25rem;
+            color: #fbbf24;
+            font-size: 1.1rem;
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 2px;
-            animation: shine-text 2s linear infinite;
             white-space: nowrap;
-            filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.8));
         }
-        
-        @keyframes badge-bounce {
-            0%, 100% { transform: translateX(-50%) translateY(0) scale(1); }
-            50% { transform: translateX(-50%) translateY(-10px) scale(1.05); }
-        }
-        
-        @keyframes shine-text {
-            to { background-position: 200% center; }
-        }
-        
-        /* Caja principal del jackpot */
+
         .jackpot-box {
             background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
             border-radius: 20px;
             padding: 2.5rem 2rem;
             position: relative;
-            animation: jackpot-pulse 2s ease-in-out infinite;
-            box-shadow: 
-                0 0 60px rgba(251, 191, 36, 0.8),
-                0 0 100px rgba(251, 191, 36, 0.6),
-                0 0 140px rgba(251, 191, 36, 0.4),
-                inset 0 0 60px rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 40px rgba(251, 191, 36, 0.5);
             border: 4px solid #fcd34d;
             overflow: hidden;
+            animation: jackpot-pulse 3s ease-in-out infinite;
         }
-        
+
         @keyframes jackpot-pulse {
-            0%, 100% {
-                transform: scale(1);
-                box-shadow: 0 0 60px rgba(251, 191, 36, 0.8), 0 0 100px rgba(251, 191, 36, 0.6), 0 0 140px rgba(251, 191, 36, 0.4), inset 0 0 60px rgba(255, 255, 255, 0.3);
-            }
-            50% {
-                transform: scale(1.03);
-                box-shadow: 0 0 80px rgba(251, 191, 36, 1), 0 0 120px rgba(251, 191, 36, 0.8), 0 0 180px rgba(251, 191, 36, 0.6), inset 0 0 80px rgba(255, 255, 255, 0.4);
-            }
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.015); }
         }
-        
-        /* Gradiente animado de fondo */
-        .animated-gradient {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(45deg, #fbbf24, #f59e0b, #d97706, #fbbf24, #f59e0b);
-            background-size: 400% 400%;
-            animation: gradient-shift 5s ease infinite;
-            opacity: 0.5;
-            z-index: 0;
-        }
-        
-        @keyframes gradient-shift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        
-        /* Efecto de brillo que cruza */
-        .shine-effect {
-            position: absolute;
-            top: 0; left: -100%; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
-            animation: shine-sweep 3s ease-in-out infinite;
-            z-index: 1;
-        }
-        
-        @keyframes shine-sweep {
-            0% { left: -100%; }
-            50% { left: 100%; }
-            100% { left: 100%; }
-        }
-        
-        /* Alerta de jackpot */
+
         .alerta-jackpot {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
             background: rgba(255, 255, 255, 0.3);
-            padding: 8px 16px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            backdrop-filter: blur(10px);
+            padding: 8px 16px; border-radius: 10px; margin-bottom: 15px;
         }
-        
-        .fire-icon {
-            font-size: 1.5rem;
-            animation: fire-flicker 0.5s ease-in-out infinite;
-        }
-        
-        @keyframes fire-flicker {
-            0%, 100% { transform: scale(1); filter: brightness(1); }
-            50% { transform: scale(1.2); filter: brightness(1.3); }
-        }
-        
-        /* Monto del premio con efecto 3D */
-        .prize-amount-container {
-            position: relative;
-            z-index: 10;
-        }
-        
-        .prize-amount-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .currency {
-            font-size: 2.5rem;
-            font-weight: 900;
-            color: #000;
-            animation: currency-bounce 2s ease-in-out infinite;
-        }
-        
-        @media (min-width: 640px) {
-            .currency { font-size: 4rem; }
-            .prize-text-3d { font-size: 4.5rem; }
-        }
-        
-        @keyframes currency-bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-        
+
+        .fire-icon { font-size: 1.4rem; }
+
+        .prize-amount-wrapper { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+
+        .currency { font-size: 2.2rem; font-weight: 900; color: #000; }
+
         .prize-text-3d {
-            font-size: 3rem;
+            font-size: 2.6rem;
             font-weight: 900;
             color: #000;
-            text-shadow: 
-                0 1px 0 #fff, 0 2px 0 #fff, 0 3px 0 #fff, 0 4px 0 #fff,
-                0 5px 0 #fff, 0 6px 0 #fff, 0 7px 0 #fff, 0 8px 0 #fff,
-                0 10px 20px rgba(0, 0, 0, 0.4), 0 15px 30px rgba(0, 0, 0, 0.3),
-                0 0 40px rgba(251, 191, 36, 0.8);
-            animation: amount-pulse 1.5s ease-in-out infinite;
+            text-shadow: 0 4px 0 #fff, 0 8px 16px rgba(0,0,0,0.35);
             display: inline-block;
         }
-        
-        @keyframes amount-pulse {
-            0%, 100% { 
-                transform: scale(1);
-                text-shadow: 0 1px 0 #fff, 0 2px 0 #fff, 0 3px 0 #fff, 0 4px 0 #fff, 0 5px 0 #fff, 0 6px 0 #fff, 0 7px 0 #fff, 0 8px 0 #fff, 0 10px 20px rgba(0,0,0,0.4), 0 15px 30px rgba(0,0,0,0.3), 0 0 40px rgba(251, 191, 36, 0.8);
-            }
-            50% { 
-                transform: scale(1.05);
-                text-shadow: 0 1px 0 #fff, 0 2px 0 #fff, 0 3px 0 #fff, 0 4px 0 #fff, 0 5px 0 #fff, 0 6px 0 #fff, 0 7px 0 #fff, 0 8px 0 #fff, 0 10px 20px rgba(0,0,0,0.5), 0 15px 30px rgba(0,0,0,0.4), 0 0 60px rgba(251, 191, 36, 1), 0 0 80px rgba(251, 191, 36, 0.8);
-            }
+
+        @media (min-width: 640px) {
+            .currency { font-size: 3.5rem; }
+            .prize-text-3d { font-size: 4rem; }
         }
-        
-        /* Caja de información */
+
         .prize-info-box {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            background: rgba(0, 0, 0, 0.1);
-            padding: 10px 20px;
-            border-radius: 10px;
-            backdrop-filter: blur(5px);
-            margin-top: 1rem;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            background: rgba(0, 0, 0, 0.1); padding: 10px 20px; border-radius: 10px; margin-top: 1rem;
         }
-        
-        .money-bag {
-            font-size: 1.5rem;
-            animation: money-shake 2s ease-in-out infinite;
-        }
-        
-        @keyframes money-shake {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-10deg); }
-            75% { transform: rotate(10deg); }
-        }
-        
-        /* Indicador de crecimiento */
-        .growth-indicator {
-            text-align: center;
-            margin-top: 1rem;
-        }
-        
-        .growth-bar {
-            width: 100%;
-            height: 8px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 4px;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .growth-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #dc2626, #fbbf24, #dc2626);
-            background-size: 200% 100%;
-            border-radius: 4px;
-            animation: growth-fill 3s ease-in-out infinite, growth-shine 2s linear infinite;
-            width: 100%;
-        }
-        
-        @keyframes growth-fill {
-            0%, 100% { width: 60%; }
-            50% { width: 100%; }
-        }
-        
-        @keyframes growth-shine {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-        
-        /* Fuegos artificiales */
-        .fireworks-container {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            pointer-events: none;
-            overflow: visible;
-            z-index: 50;
-        }
-        
-        .firework {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            animation: firework-explode 2s ease-out infinite;
-        }
-        
-        @keyframes firework-explode {
-            0% { transform: translate(0, 0) scale(1); opacity: 1; }
-            100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
-        }
+
+        .money-bag { font-size: 1.4rem; }
+
+        .growth-indicator { text-align: center; margin-top: 1rem; }
+        .growth-bar { width: 100%; height: 6px; background: rgba(0,0,0,0.2); border-radius: 4px; overflow: hidden; }
+        .growth-fill { height: 100%; background: #dc2626; border-radius: 4px; width: 75%; }
 
         /* ==========================================
-           ANIMACIONES DEL CRONÓMETRO
+           CRONÓMETRO
            ========================================== */
-        .countdown-box {
-            animation: fadeInDown 1s ease-out;
-        }
-
         .countdown-item {
             background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-            border: 2px solid #fbbf24;
-            border-radius: 12px;
-            padding: 1rem;
-            min-width: 80px;
-            transition: all 0.3s ease;
-            animation: scaleIn 0.8s ease-out backwards;
-            box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+            border: 2px solid #fbbf24; border-radius: 12px; padding: 1rem; min-width: 80px;
+            box-shadow: 0 0 12px rgba(251, 191, 36, 0.25);
         }
 
-        .countdown-item:nth-child(1) { animation-delay: 0.1s; }
-        .countdown-item:nth-child(2) { animation-delay: 0.2s; }
-        .countdown-item:nth-child(3) { animation-delay: 0.3s; }
-        .countdown-item:nth-child(4) { animation-delay: 0.4s; }
+        .countdown-number { font-size: 2.2rem; font-weight: 900; color: #fbbf24; }
 
-        .countdown-item:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.6);
-            border-color: #fcd34d;
-        }
+        @media (min-width: 640px) { .countdown-number { font-size: 3.2rem; } }
 
-        .countdown-number {
-            font-size: 2.5rem;
-            font-weight: 900;
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: glow 2s ease-in-out infinite;
-        }
-
-        @media (min-width: 640px) {
-            .countdown-number {
-                font-size: 3.5rem;
-            }
-        }
-
-        .countdown-label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #9ca3af;
-            margin-top: 0.5rem;
-        }
+        .countdown-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: #9ca3af; margin-top: 0.5rem; }
 
         /* ==========================================
-           ANIMACIONES DEL HERO
+           HERO
            ========================================== */
-        .hero-section {
-            animation: fadeInUp 1s ease-out;
-        }
-
-        .hero-title {
-            animation: fadeInDown 1s ease-out 0.3s backwards;
-        }
-
-        .hero-title-word {
-            display: inline-block;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .hero-title-word:nth-child(1) { animation-delay: 0s; }
-        .hero-title-word:nth-child(2) { animation-delay: 0.5s; }
-        .hero-title-word:nth-child(3) { animation-delay: 1s; }
-
-        .hero-description {
-            animation: fadeInUp 1s ease-out 0.6s backwards;
-        }
-
-        .hero-button {
-            animation: scaleIn 1s ease-out 0.9s backwards;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .hero-button::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .hero-button:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-
-        .hero-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.5);
-        }
+        .hero-section { animation: fadeInUp 0.8s ease-out; }
+        .hero-title { animation: fadeInDown 0.8s ease-out; }
+        .hero-description { animation: fadeInUp 0.8s ease-out 0.15s backwards; }
+        .hero-button { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .hero-button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(251, 191, 36, 0.4); }
 
         /* ==========================================
-           ANIMACIONES DE LOS NÚMEROS DEL SORTEO
+           NÚMEROS DEL ÚLTIMO SORTEO
            ========================================== */
-        .last-draw-section {
-            animation: fadeInUp 1s ease-out;
-        }
-
-        @keyframes flip-number {
-            0% { transform: rotateX(0deg); }
-            50% { transform: rotateX(90deg); }
-            100% { transform: rotateX(0deg); }
-        }
-
-        .number-ball {
-            display: inline-block;
-            transform-style: preserve-3d;
-            animation: scaleIn 0.5s ease-out backwards;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .number-ball::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
-            transform: rotate(45deg);
-            animation: ball-shine 3s ease-in-out infinite;
-        }
-
-        @keyframes ball-shine {
-            0%, 100% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-            50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-        }
-
-        .number-ball:nth-child(1) { animation-delay: 0.1s; }
-        .number-ball:nth-child(3) { animation-delay: 0.2s; }
-        .number-ball:nth-child(5) { animation-delay: 0.3s; }
-        .number-ball:nth-child(7) { animation-delay: 0.4s; }
-        .number-ball:nth-child(9) { animation-delay: 0.5s; }
-        .number-ball:nth-child(11) { animation-delay: 0.6s; }
-
-        .number-ball.flip {
-            animation: flip-number 0.6s ease-in-out;
-        }
-
-        .number-ball:hover {
-            transform: scale(1.2) rotateY(180deg);
-            transition: all 0.5s ease;
-        }
+        .last-draw-section { animation: fadeInUp 0.8s ease-out; }
+        .number-ball { display: inline-block; animation: scaleIn 0.4s ease-out backwards; }
+        .number-ball:nth-child(1) { animation-delay: 0.05s; }
+        .number-ball:nth-child(3) { animation-delay: 0.1s; }
+        .number-ball:nth-child(5) { animation-delay: 0.15s; }
+        .number-ball:nth-child(7) { animation-delay: 0.2s; }
+        .number-ball:nth-child(9) { animation-delay: 0.25s; }
+        .number-ball:nth-child(11) { animation-delay: 0.3s; }
 
         /* ==========================================
-           ANIMACIONES DE CÓMO FUNCIONA
+           CÓMO FUNCIONA
            ========================================== */
-        .how-it-works-section {
-            animation: fadeInUp 1s ease-out;
-        }
-
-        .how-it-works-title {
-            animation: fadeInDown 1s ease-out;
-        }
-
-        .step-card {
-            animation: slideInLeft 0.8s ease-out backwards;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .step-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.1), transparent);
-            transition: left 0.5s;
-        }
-
-        .step-card:hover::before {
-            left: 100%;
-        }
-
-        .step-card:nth-child(1) { animation-delay: 0.1s; }
-        .step-card:nth-child(2) { animation-delay: 0.3s; }
-        .step-card:nth-child(3) { animation-delay: 0.5s; }
-
-        .step-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 20px 40px rgba(251, 191, 36, 0.4);
-            border-color: #fbbf24;
-        }
-
-        .step-icon {
-            font-size: 3rem;
-            animation: float 3s ease-in-out infinite;
-            display: inline-block;
-        }
-
-        .step-card:nth-child(1) .step-icon { animation-delay: 0s; }
-        .step-card:nth-child(2) .step-icon { animation-delay: 1s; }
-        .step-card:nth-child(3) .step-icon { animation-delay: 2s; }
-
+        .step-card { transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; }
+        .step-card:hover { transform: translateY(-6px); box-shadow: 0 15px 30px rgba(251, 191, 36, 0.25); border-color: #fbbf24; }
+        .step-icon { font-size: 3rem; display: inline-block; }
         .step-number {
-            display: inline-block;
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-            color: #000;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 40px;
-            font-weight: 900;
-            margin-bottom: 1rem;
-            animation: scaleIn 0.5s ease-out backwards;
+            display: inline-block; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #000; width: 40px; height: 40px; border-radius: 50%;
+            text-align: center; line-height: 40px; font-weight: 900; margin-bottom: 1rem;
         }
 
         /* ==========================================
-           ANIMACIONES DE PREMIOS
+           PREMIOS
            ========================================== */
-        .prizes-section {
-            animation: fadeInUp 1s ease-out;
-        }
+        .prize-card { transition: transform 0.3s ease; }
+        .prize-card:hover { transform: translateY(-6px); }
+        .prize-card.jackpot-prize { border: 3px solid #fbbf24; box-shadow: 0 0 20px rgba(251, 191, 36, 0.4); }
+        .prize-amount { font-size: 2.2rem; font-weight: 900; color: #fbbf24; }
+        @media (min-width: 640px) { .prize-amount { font-size: 2.8rem; } }
 
-        .prizes-title {
-            animation: fadeInDown 1s ease-out;
-        }
-
-        .prize-card {
-            animation: scaleIn 0.6s ease-out backwards;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .prize-card::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(251, 191, 36, 0.2) 0%, transparent 70%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .prize-card:hover::after {
-            opacity: 1;
-        }
-
-        .prize-card:nth-child(1) { animation-delay: 0.1s; }
-        .prize-card:nth-child(2) { animation-delay: 0.2s; }
-        .prize-card:nth-child(3) { animation-delay: 0.3s; }
-        .prize-card:nth-child(4) { animation-delay: 0.4s; }
-        .prize-card:nth-child(5) { animation-delay: 0.5s; }
-
-        .prize-card:hover {
-            transform: translateY(-10px) scale(1.05);
-        }
-
-        .prize-card.jackpot-prize {
-            animation: jackpot-prize-pulse 2s ease-in-out infinite, scaleIn 0.6s ease-out backwards;
-            border: 3px solid #fbbf24;
-            box-shadow: 0 0 30px rgba(251, 191, 36, 0.6);
-        }
-
-        @keyframes jackpot-prize-pulse {
-            0%, 100% {
-                box-shadow: 0 0 30px rgba(251, 191, 36, 0.6);
-                transform: scale(1);
+        /* Respeta a quienes prefieren menos movimiento (accesibilidad y batería) */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
             }
-            50% {
-                box-shadow: 0 0 50px rgba(251, 191, 36, 0.9);
-                transform: scale(1.02);
-            }
-        }
-
-        .prize-amount {
-            font-size: 2.5rem;
-            font-weight: 900;
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: glow 2s ease-in-out infinite;
-        }
-
-        @media (min-width: 640px) {
-            .prize-amount {
-                font-size: 3rem;
-            }
-        }
-
-        /* ==========================================
-           ANIMACIONES DEL FOOTER
-           ========================================== */
-        footer {
-            animation: fadeInUp 1s ease-out;
-        }
-
-        /* Navbar animations */
-        nav {
-            animation: fadeInDown 0.8s ease-out;
-        }
-
-        .nav-logo {
-            animation: float 3s ease-in-out infinite;
         }
     </style>
 </head>
@@ -716,6 +165,8 @@
                 <span class="text-dorado-400 font-extrabold text-xl nav-logo">💰 El Billetazo</span>
 
                 <div class="flex items-center gap-4">
+                    <a href="{{ route('ganadores.index') }}" class="text-sm text-dorado-300 hover:text-dorado-400 transition-all duration-300 hover:scale-110">🏆 Ganadores</a>
+
                     @auth
                         <a href="{{ route('dashboard') }}" class="text-sm text-dorado-300 hover:text-dorado-400 transition-all duration-300 hover:scale-110">Mi cuenta</a>
                     @else
@@ -874,8 +325,8 @@
         </div>
     </section>
 
-    <script>
-        // Crear fuegos artificiales
+    <!--<script>
+        
         function createFireworks() {
             const container = document.getElementById('fireworks');
             if (!container) return;
@@ -918,7 +369,7 @@
         }
         
         document.addEventListener('DOMContentLoaded', createFireworks);
-    </script>
+    </script>-->
     @endif
 
     @if ($ultimoSorteoJugado)
@@ -956,8 +407,8 @@
         </div>
     </section>
 
-    <script>
-        // Animación de rotación para los números del sorteo
+    <!--<script>
+        
         document.addEventListener('DOMContentLoaded', function() {
             const numberBalls = document.querySelectorAll('.number-ball');
             
@@ -979,7 +430,7 @@
                 });
             }, 3000);
         });
-    </script>
+    </script>-->
     @endif
 
     <!-- Cómo funciona Section -->
@@ -1005,7 +456,7 @@
                     <div class="step-number">3</div>
                     <div class="step-icon mb-4">🏆</div>
                     <h3 class="font-bold text-xl mb-3 text-dorado-400">Espera el sorteo</h3>
-                    <p class="text-gray-400">Todos los domingos a las 4:00 p.m. ¡Gana hasta S/ 1,000!</p>
+                    <p class="text-gray-400">Todos los domingos a las 4:00 p.m. ¡Gana hasta S/ 1,000! + el pozo acumulado</p>
                 </div>
             </div>
         </div>
