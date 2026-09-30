@@ -24,7 +24,7 @@ class SorteoController extends Controller
                 });
             })
             ->latest('fecha')
-            ->paginate(10)
+            ->paginate(50)
             ->withQueryString();
 
         return view('empresa.sorteos.index', compact('sorteos', 'fechaDesde', 'fechaHasta', 'numero'));
@@ -35,6 +35,46 @@ class SorteoController extends Controller
         $premioMayorProximo = $this->calcularProximoPremioMayor();
 
         return view('empresa.sorteos.create', compact('premioMayorProximo'));
+    }
+
+        public function edit(Sorteo $sorteo)
+    {
+        if ($sorteo->estado !== 'pendiente') {
+            return back()->with('error', 'Solo puedes editar sorteos que todavía no se han jugado.');
+        }
+
+        return view('empresa.sorteos.edit', compact('sorteo'));
+    }
+
+    public function update(Request $request, Sorteo $sorteo)
+    {
+        if ($sorteo->estado !== 'pendiente') {
+            return back()->with('error', 'Solo puedes editar sorteos que todavía no se han jugado.');
+        }
+
+        $datos = $request->validate([
+            'fecha' => 'required|date',
+            'hora' => 'required|date_format:H:i',
+        ]);
+
+        $sorteo->update($datos);
+
+        return redirect()->route('sorteos.index')->with('exito', 'Sorteo actualizado correctamente.');
+    }
+
+    public function destroy(Sorteo $sorteo)
+    {
+        if ($sorteo->estado !== 'pendiente') {
+            return back()->with('error', 'Solo puedes eliminar sorteos que todavía no se han jugado.');
+        }
+
+        if ($sorteo->boletos()->exists()) {
+            return back()->with('error', 'No puedes eliminar un sorteo que ya tiene jugadas registradas.');
+        }
+
+        $sorteo->delete();
+
+        return redirect()->route('sorteos.index')->with('exito', 'Sorteo eliminado correctamente.');
     }
 
     public function store(Request $request)

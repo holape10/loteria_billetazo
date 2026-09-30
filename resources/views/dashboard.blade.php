@@ -63,6 +63,10 @@
                     ¿Necesitas ayuda? Escríbenos a
                     <a href="mailto:loteriabilletazo@gmail.com" class="text-dorado-400 underline">loteriabilletazo@gmail.com</a>
                 </div>
+            @elseif (auth()->user()->rol === 'moderador')
+                <div class="bg-gray-900 text-white shadow-sm sm:rounded-lg p-6 border border-dorado-700">
+                    <p class="text-gray-300 text-lg">Bienvenido, moderador. Usa el menú de arriba para ver y realizar los sorteos, y consultar los ganadores.</p>
+                </div>
             @else
                 <div class="bg-gray-900 text-white shadow-sm sm:rounded-lg p-6 border border-dorado-700">
                     <p class="text-gray-300 text-lg">Bienvenido, administrador. Usa el menú de arriba para gestionar clientes, sorteos, compras y reportes.</p>

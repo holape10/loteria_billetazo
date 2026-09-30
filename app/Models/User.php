@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'rol', 'cliente_id'])]
+#[Fillable(['name', 'email', 'password', 'rol', 'cliente_id', 'activo'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -27,6 +27,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'activo' => 'boolean',
         ];
     }
 
@@ -35,8 +36,18 @@ class User extends Authenticatable
         return $this->belongsTo(Cliente::class);
     }
 
-    public function esAdministrador(): bool
+        public function esAdministrador(): bool
     {
-        return $this->rol === 'administrador';
+        return in_array($this->rol, ['administrador', 'superadmin']);
+    }
+
+    public function esSuperAdmin(): bool
+    {
+        return $this->rol === 'superadmin';
+    }
+
+    public function puedeGestionarSorteos(): bool
+    {
+        return in_array($this->rol, ['administrador', 'superadmin', 'moderador']);
     }
 }

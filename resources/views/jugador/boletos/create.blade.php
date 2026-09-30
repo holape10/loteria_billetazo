@@ -59,18 +59,19 @@
                 <div class="bg-gradient-to-br from-gray-900 to-gray-800 border-2 border-dorado-600 rounded-2xl p-6 mb-8 flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-dorado-400 group animate-on-scroll">
                     <div class="relative">
                         <div class="absolute inset-0 bg-dorado-500 rounded-lg blur-lg opacity-50 group-hover:opacity-75 transition-opacity duration-300"></div>
-                        <img src="{{ asset('images/qr-billetazo.png') }}" alt="QR de pago Yape/Plin"
-                             class="relative w-40 h-40 sm:w-48 sm:h-48 rounded-lg border-4 border-dorado-500 bg-white p-2 shrink-0 transform group-hover:scale-105 transition-transform duration-300">
-                        <div class="absolute -top-2 -right-2 bg-dorado-500 text-black rounded-full p-2 animate-bounce">
+                        <img src="{{ asset('images/qr-billetazo_ok.png') }}" alt="QR de pago Plin" id="qr-imagen" onclick="abrirModalQr()"
+                             class="relative w-40 h-40 sm:w-48 sm:h-48 rounded-lg border-4 border-dorado-500 bg-white p-2 shrink-0 transform group-hover:scale-105 transition-transform duration-300 cursor-pointer">
+                        <div class="absolute -top-2 -right-2 bg-dorado-500 text-black rounded-full p-2 animate-bounce pointer-events-none">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                             </svg>
                         </div>
+                        <p class="text-center text-xs text-gray-400 mt-2">👆 Toca para ampliar</p>
                     </div>
                     <div class="flex-1">
                         <div class="flex items-center justify-center sm:justify-start gap-2 mb-2">
                             <span class="text-2xl">💰</span>
-                            <p class="text-dorado-400 font-extrabold text-xl sm:text-2xl">Paga aquí con Yape o Plin</p>
+                            <p class="text-dorado-400 font-extrabold text-xl sm:text-2xl">Paga aquí con Plin</p>
                         </div>
                         <p class="text-gray-300 text-sm mt-2">Escanea el código QR o transfiere al número:</p>
                         <div class="mt-3 inline-block bg-gray-800 rounded-xl px-6 py-3 border-2 border-dorado-500">
@@ -121,7 +122,6 @@
                                     Método de pago <span class="text-dorado-500">*</span>
                                 </label>
                                 <select name="metodo_pago" class="w-full bg-gray-800 border-2 border-gray-700 focus:border-dorado-500 text-white rounded-xl px-4 py-3 transition-all duration-300 outline-none focus:ring-4 focus:ring-dorado-500/20">
-                                    <option value="yape">💜 Yape - 964382212</option>
                                     <option value="plin">💚 Plin - 964382212</option>
                                 </select>
                             </div>
@@ -575,5 +575,25 @@
 
         // Crear primera jugada
         crearJugada();
+    </script>
+        <!-- Modal QR expandido -->
+    <div id="modal-qr" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onclick="cerrarModalQr(event)">
+        <div class="relative max-w-sm w-full text-center" onclick="event.stopPropagation()">
+            <button type="button" onclick="cerrarModalQr()" class="absolute -top-10 right-0 text-white text-3xl leading-none">&times;</button>
+            <img src="{{ asset('images/qr-billetazo_ok.png') }}" alt="QR de pago Plin" class="w-full rounded-xl border-4 border-dorado-500 bg-white p-2">
+            <a href="{{ asset('images/qr-billetazo_ok.png') }}" download="qr-billetazo.png" class="mt-4 inline-block px-6 py-3 bg-dorado-500 hover:bg-dorado-600 text-black font-bold rounded-xl">
+                ⬇️ Descargar QR
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function abrirModalQr() {
+            document.getElementById('modal-qr').classList.remove('hidden');
+        }
+
+        function cerrarModalQr(event) {
+            document.getElementById('modal-qr').classList.add('hidden');
+        }
     </script>
 </x-app-layout>

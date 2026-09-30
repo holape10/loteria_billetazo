@@ -14,6 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'admin' => \App\Http\Middleware\EsAdministrador::class,
+            'sorteos' => \App\Http\Middleware\PuedeGestionarSorteos::class,
+            'superadmin' => \App\Http\Middleware\EsSuperAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

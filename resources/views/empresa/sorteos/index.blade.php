@@ -15,32 +15,34 @@
                 @endif
 
                 <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
-                    <a href="{{ route('sorteos.create') }}" class="inline-block px-4 py-2 bg-gray-800 text-white rounded">+ Programar sorteo</a>
+                    @if (auth()->user()->esAdministrador())
+                        <a href="{{ route('sorteos.create') }}" class="inline-block px-4 py-2 bg-gray-800 text-white rounded">+ Programar sorteo</a>
+                    @endif
                 </div>
 
                 <form action="{{ route('sorteos.index') }}" method="GET" class="mb-4 flex flex-wrap gap-2 items-end">
                     <div>
-                        <label class="block text-xs text-gray-600">Desde</label>
-                        <input type="date" name="fecha_desde" value="{{ $fechaDesde }}" class="border-gray-300 rounded-md text-sm">
+                        <label class="block text-xs text-gray-400">Desde</label>
+                        <input type="date" name="fecha_desde" value="{{ $fechaDesde }}" class="bg-gray-800 border-gray-700 text-white rounded-md text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs text-gray-600">Hasta</label>
-                        <input type="date" name="fecha_hasta" value="{{ $fechaHasta }}" class="border-gray-300 rounded-md text-sm">
+                        <label class="block text-xs text-gray-400">Hasta</label>
+                        <input type="date" name="fecha_hasta" value="{{ $fechaHasta }}" class="bg-gray-800 border-gray-700 text-white rounded-md text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs text-gray-600">Número</label>
-                        <input type="number" name="numero" min="1" max="60" value="{{ $numero }}" placeholder="Ej: 23" class="border-gray-300 rounded-md text-sm w-24">
+                        <label class="block text-xs text-gray-400">Número</label>
+                        <input type="number" name="numero" min="1" max="60" value="{{ $numero }}" placeholder="Ej: 23" class="bg-gray-800 border-gray-700 text-white rounded-md text-sm w-24">
                     </div>
-                    <button type="submit" class="px-4 py-2 bg-gray-700 text-white rounded text-sm">Buscar</button>
+                    <button type="submit" class="px-4 py-2 bg-dorado-500 hover:bg-dorado-600 text-black font-semibold rounded text-sm">Buscar</button>
                     @if ($fechaDesde || $fechaHasta || $numero)
-                        <a href="{{ route('sorteos.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded text-sm">Limpiar</a>
+                        <a href="{{ route('sorteos.index') }}" class="px-4 py-2 bg-gray-700 text-white rounded text-sm">Limpiar</a>
                     @endif
                 </form>
 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-sm">
                         <thead>
-                            <tr class="border-b">
+                            <tr class="border-b border-gray-700">
                                 <th class="py-2 pr-4">Fecha</th>
                                 <th class="py-2 pr-4">Hora</th>
                                 <th class="py-2 pr-4">Números ganadores</th>
@@ -84,18 +86,37 @@
                                         @endif
                                     </td>
                                     <td class="py-2 pr-4">{{ ucfirst($sorteo->estado) }}</td>
+
                                     <td class="py-2">
+                                        @if ($sorteo->estado === 'pendiente')
+                                            <div class="flex flex-col gap-1">
+                                                <a href="{{ route('sorteos.individual', $sorteo) }}" class="text-black bg-dorado-300 hover:bg-dorado-400 px-3 py-1 rounded text-sm font-semibold text-center">🎱 Inicia Sorteo</a>
+
+                                                @if (auth()->user()->esAdministrador())
+                                                    <a href="{{ route('sorteos.edit', $sorteo) }}" class="text-black bg-gray-300 hover:bg-gray-400 px-3 py-1 rounded text-sm font-semibold text-center">✏️ Editar</a>
+                                                    <form action="{{ route('sorteos.destroy', $sorteo) }}" method="POST" onsubmit="return confirm('¿Eliminar este sorteo? Esta acción no se puede deshacer.')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="w-full text-white bg-red-700 hover:bg-red-800 px-3 py-1 rounded text-sm font-semibold">🗑️ Eliminar</button>
+                                                    </form>
+                                                @endif
+                                            </div>
+                                        @endif
+                                    </td>
+
+                                    <!--<td class="py-2">
                                         @if ($sorteo->estado === 'pendiente')
                                             <div class="flex flex-col gap-1">
                                                 <form action="{{ route('sorteos.realizar', $sorteo) }}" method="POST" onsubmit="return confirm('¿Realizar el sorteo al azar ahora?')">
                                                     @csrf
-                                                    <!--<button type="submit" class="text-black bg-dorado-500 hover:bg-dorado-600 px-3 py-1 rounded text-sm font-semibold w-full">🎲 Sortear al azar</button>
+                                                    <button type="submit" class="text-black bg-dorado-500 hover:bg-dorado-600 px-3 py-1 rounded text-sm font-semibold w-full">🎲 Sortear al azar</button>
                                                 </form>
-                                                <a href="{{ route('sorteos.realizar-manual.form', $sorteo) }}" class="text-black bg-gray-300 hover:bg-gray-400 px-3 py-1 rounded text-sm font-semibold text-center">✋ Manual</a>-->
+                                                <a href="{{ route('sorteos.realizar-manual.form', $sorteo) }}" class="text-black bg-gray-300 hover:bg-gray-400 px-3 py-1 rounded text-sm font-semibold text-center">✋ Manual</a>
                                                 <a href="{{ route('sorteos.individual', $sorteo) }}" class="text-black bg-dorado-300 hover:bg-dorado-400 px-3 py-1 rounded text-sm font-semibold text-center">🎱 Inicia Sorteo</a>
                                             </div>
                                         @endif
-                                    </td>
+                                    </td>-->
+
                                 </tr>
                             @empty
                                 <tr><td colspan="7" class="py-4 text-center text-gray-500">No se encontraron sorteos.</td></tr>

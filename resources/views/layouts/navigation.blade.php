@@ -13,6 +13,12 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
+                    @if (auth()->user()->esSuperAdmin())
+                        <x-nav-link :href="route('usuarios.index')" :active="request()->routeIs('usuarios.*')">
+                            {{ __('Usuarios') }}
+                        </x-nav-link>
+                    @endif
+
                     @if (auth()->user()->esAdministrador())
                         <x-nav-link :href="route('clientes.index')" :active="request()->routeIs('clientes.*')">
                             {{ __('Clientes') }}
@@ -31,6 +37,16 @@
                         </x-nav-link>
                         <x-nav-link :href="route('reportes.financiero')" :active="request()->routeIs('reportes.financiero')">
                             {{ __('Reporte Financiero') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('ganadores.index')" :active="request()->routeIs('ganadores.index')">
+                            {{ __('Ganadores') }}
+                        </x-nav-link>
+                    @elseif (auth()->user()->rol === 'moderador')
+                        <x-nav-link :href="route('sorteos.index')" :active="request()->routeIs('sorteos.*')">
+                            {{ __('Sorteos') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('ganadores.index')" :active="request()->routeIs('ganadores.index')">
+                            {{ __('Ganadores') }}
                         </x-nav-link>
                     @else
                         <x-nav-link :href="route('boletos.create')" :active="request()->routeIs('boletos.create')">
@@ -55,14 +71,14 @@
 
                     <x-slot name="content">
                         <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Perfil') }}
+                            {{ __('Profile') }}
                         </x-dropdown-link>
 
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <x-dropdown-link :href="route('logout')"
                                     onclick="event.preventDefault(); this.closest('form').submit();">
-                                {{ __('Salir') }}
+                                {{ __('Log Out') }}
                             </x-dropdown-link>
                         </form>
                     </x-slot>
@@ -86,6 +102,12 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
 
+            @if (auth()->user()->esSuperAdmin())
+                <x-responsive-nav-link :href="route('usuarios.index')" :active="request()->routeIs('usuarios.*')">
+                    {{ __('Usuarios') }}
+                </x-responsive-nav-link>
+            @endif
+
             @if (auth()->user()->esAdministrador())
                 <x-responsive-nav-link :href="route('clientes.index')" :active="request()->routeIs('clientes.*')">
                     {{ __('Clientes') }}
@@ -104,6 +126,16 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('reportes.financiero')" :active="request()->routeIs('reportes.financiero')">
                     {{ __('Reporte Financiero') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('ganadores.index')" :active="request()->routeIs('ganadores.index')">
+                    {{ __('Ganadores') }}
+                </x-responsive-nav-link>
+            @elseif (auth()->user()->rol === 'moderador')
+                <x-responsive-nav-link :href="route('sorteos.index')" :active="request()->routeIs('sorteos.*')">
+                    {{ __('Sorteos') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('ganadores.index')" :active="request()->routeIs('ganadores.index')">
+                    {{ __('Ganadores') }}
                 </x-responsive-nav-link>
             @else
                 <x-responsive-nav-link :href="route('boletos.create')" :active="request()->routeIs('boletos.create')">

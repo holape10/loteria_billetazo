@@ -31,6 +31,16 @@ class AuthenticatedSessionController extends Controller
 
         $usuario = Auth::user();
 
+        if (! $usuario->activo) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            throw ValidationException::withMessages([
+                'email' => 'Tu cuenta está inactiva. Contacta al superadministrador.',
+            ]);
+        }
+
         if ($usuario->rol === 'jugador' && $usuario->cliente && ! $usuario->cliente->estado) {
             Auth::logout();
             $request->session()->invalidate();
