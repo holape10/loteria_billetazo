@@ -26,8 +26,15 @@ class Cliente extends Model
         'estado' => 'boolean',
     ];
 
-        public function boletos()
+    public function boletos()
     {
         return $this->hasMany(Boleto::class);
+    }
+
+    public function incidenciasNoLeidas(): int
+    {
+        return Incidencia::whereHas('compra', function ($q) {
+            $q->where('cliente_id', $this->id);
+        })->where('leido', false)->count();
     }
 }

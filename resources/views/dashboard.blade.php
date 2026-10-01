@@ -29,7 +29,8 @@
                                     <th class="py-2 pr-4">Números</th>
                                     <th class="py-2 pr-4">Aciertos</th>
                                     <th class="py-2 pr-4">Premio</th>
-                                    <th class="py-2">Estado de pago</th>
+                                    <th class="py-2 pr-4">Estado de pago</th>
+                                    <th class="py-2">Comprobante</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -47,7 +48,18 @@
                                                 —
                                             @endif
                                         </td>
-                                        <td class="py-2">{{ $boleto->compra ? ucfirst($boleto->compra->estado_pago) : '—' }}</td>
+                                        <td class="py-2 pr-4">{{ $boleto->compra ? ucfirst($boleto->compra->estado_pago) : '—' }}</td>
+                                        <td class="py-2">
+                                            @if ($boleto->compra)
+                                                <a href="{{ route('compras.comprobante', $boleto->compra) }}" target="_blank" class="text-blue-400">👁️</a>
+                                                <a href="{{ route('compras.comprobante.pdf', $boleto->compra) }}" target="_blank" class="text-dorado-400 ml-1">📄</a>
+                                                @if ($boleto->compra->comprobante)
+                                                    <a href="{{ Storage::url($boleto->compra->comprobante) }}" target="_blank" class="text-green-400 ml-1">🧾</a>
+                                                @endif
+                                            @else
+                                                —
+                                            @endif
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr><td colspan="5" class="py-4 text-center text-gray-400">Todavía no has jugado.</td></tr>

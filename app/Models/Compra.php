@@ -29,6 +29,11 @@ class Compra extends Model
         return $this->belongsTo(Cliente::class);
     }
 
+    public function incidencias()
+    {
+        return $this->hasMany(Incidencia::class);
+    }
+
     protected $casts = [
         'requiere_revision' => 'boolean',
     ];

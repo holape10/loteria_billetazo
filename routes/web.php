@@ -11,6 +11,7 @@ use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\GanadorController;
 use App\Http\Controllers\ComprobanteController;
 use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\IncidenciaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -62,6 +63,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('compras', [CompraController::class, 'index'])->name('compras.index');
     Route::post('compras/{compra}/aprobar', [CompraController::class, 'aprobar'])->name('compras.aprobar');
     Route::post('compras/{compra}/rechazar', [CompraController::class, 'rechazar'])->name('compras.rechazar');
+    Route::post('compras/{compra}/incidencia', [IncidenciaController::class, 'store'])->name('incidencias.store');
 
     Route::get('reportes/clientes-frecuentes', [ReporteController::class, 'clientesFrecuentes'])->name('reportes.clientes-frecuentes');
     Route::get('reportes/numeros-frecuentes', [ReporteController::class, 'numerosFrecuentes'])->name('reportes.numeros-frecuentes');
@@ -111,6 +113,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/jugar', [BoletoController::class, 'create'])->name('boletos.create');
     Route::post('/jugar/{sorteo}', [BoletoController::class, 'store'])->name('boletos.store');
+    Route::get('mis-incidencias', [IncidenciaController::class, 'index'])->name('incidencias.index');
 
     Route::get('compras/{compra}/comprobante', [ComprobanteController::class, 'ver'])->name('compras.comprobante');
     Route::get('compras/{compra}/comprobante/pdf', [ComprobanteController::class, 'pdf'])->name('compras.comprobante.pdf');

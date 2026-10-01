@@ -81,6 +81,7 @@
                                         @endif
                                         <a href="{{ route('compras.comprobante', $compra) }}" target="_blank" class="text-blue-600 font-semibold ml-2">👁️ Ver</a>
                                         <a href="{{ route('compras.comprobante.pdf', $compra) }}" target="_blank" class="text-dorado-600 font-semibold ml-2">📄 PDF</a>
+                                        <button type="button" onclick="abrirModalReporte({{ $compra->id }}, '{{ $compra->sorteo->fecha->format('d/m/Y') }}', '{{ number_format($compra->monto_total, 2) }}', '{{ $compra->cantidad_jugadas }}')" class="text-orange-500 font-semibold ml-2">🚩 Reporte</button>
                                     </td>
                                 </tr>
                             @empty
@@ -94,4 +95,53 @@
             </div>
         </div>
     </div>
+        <!-- Modal de Reporte / Incidencia -->
+    <div id="modal-reporte" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" data-url-template="{{ route('incidencias.store', ['compra' => 'ID_PLACEHOLDER']) }}">
+        <div class="bg-gray-900 border-2 border-dorado-600 rounded-2xl p-6 max-w-md w-full text-white">
+            <h3 class="text-xl font-bold text-dorado-400 mb-4">🚩 Reportar incidencia</h3>
+
+            <div class="bg-gray-800 rounded-lg p-3 mb-4 text-sm space-y-1">
+                <p><span class="text-gray-400">Sorteo:</span> <span id="reporte-sorteo" class="font-semibold"></span></p>
+                <p><span class="text-gray-400">Jugadas:</span> <span id="reporte-jugadas" class="font-semibold"></span></p>
+                <p><span class="text-gray-400">Monto de la compra:</span> S/ <span id="reporte-monto" class="font-semibold"></span></p>
+            </div>
+
+            <form id="form-incidencia" action="" method="POST">
+                @csrf
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Fecha del depósito (opcional)</label>
+                    <input type="date" name="fecha_deposito" class="w-full bg-gray-800 border-gray-700 text-white rounded-md">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Observaciones / motivo del reporte</label>
+                    <textarea name="observaciones" rows="4" required placeholder="Ej: El depósito no corresponde a la cantidad de jugadas registradas..." class="w-full bg-gray-800 border-gray-700 text-white rounded-md"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="cerrarModalReporte()" class="px-4 py-2 bg-gray-700 text-white rounded">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-dorado-500 hover:bg-dorado-600 text-black font-semibold rounded">Guardar incidencia</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function abrirModalReporte(compraId, sorteoFecha, monto, jugadas) {
+            const modal = document.getElementById('modal-reporte');
+            const url = modal.dataset.urlTemplate.replace('ID_PLACEHOLDER', compraId);
+
+            document.getElementById('form-incidencia').action = url;
+            document.getElementById('reporte-sorteo').textContent = sorteoFecha;
+            document.getElementById('reporte-monto').textContent = monto;
+            document.getElementById('reporte-jugadas').textContent = jugadas;
+
+            modal.classList.remove('hidden');
+        }
+
+        function cerrarModalReporte() {
+            document.getElementById('modal-reporte').classList.add('hidden');
+        }
+    </script>
 </x-app-layout>

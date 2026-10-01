@@ -52,6 +52,14 @@
                         <x-nav-link :href="route('boletos.create')" :active="request()->routeIs('boletos.create')">
                             {{ __('Jugar') }}
                         </x-nav-link>
+
+                        @php $noLeidas = auth()->user()->cliente?->incidenciasNoLeidas() ?? 0; @endphp
+                        <a href="{{ route('incidencias.index') }}" class="relative inline-flex items-center px-2">
+                            <span class="text-2xl campana-animada">🔔</span>
+                            @if ($noLeidas > 0)
+                                <span class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">{{ $noLeidas }}</span>
+                            @endif
+                        </a>
                     @endif
                 </div>
             </div>
@@ -141,6 +149,11 @@
                 <x-responsive-nav-link :href="route('boletos.create')" :active="request()->routeIs('boletos.create')">
                     {{ __('Jugar') }}
                 </x-responsive-nav-link>
+
+                @php $noLeidasMovil = auth()->user()->cliente?->incidenciasNoLeidas() ?? 0; @endphp
+                <x-responsive-nav-link :href="route('incidencias.index')">
+                    🔔 Notificaciones @if ($noLeidasMovil > 0) <span class="ml-1 bg-red-600 text-white text-xs rounded-full px-2">{{ $noLeidasMovil }}</span> @endif
+                </x-responsive-nav-link>
             @endif
         </div>
 
@@ -165,4 +178,18 @@
             </div>
         </div>
     </div>
+        <style>
+        @keyframes mover-campana {
+            0%, 100% { transform: rotate(0deg); }
+            20% { transform: rotate(-15deg); }
+            40% { transform: rotate(12deg); }
+            60% { transform: rotate(-8deg); }
+            80% { transform: rotate(4deg); }
+        }
+        .campana-animada {
+            display: inline-block;
+            animation: mover-campana 2s ease-in-out infinite;
+            transform-origin: top center;
+        }
+    </style>
 </nav>
