@@ -48,7 +48,18 @@
                                     <td class="py-2 pr-4">{{ $compra->cliente->celular }}</td>
                                     <td class="py-2 pr-4">{{ $compra->sorteo->fecha->format('d/m/Y') }}</td>
                                     <td class="py-2 pr-4">{{ $compra->cantidad_jugadas }}</td>
-                                    <td class="py-2 pr-4">S/ {{ number_format($compra->monto_total, 2) }}</td>
+                                    <td class="py-2 pr-4">
+                                        S/ {{ number_format($compra->monto_total, 2) }}
+                                        @if ($compra->requiere_revision)
+                                            <br>
+                                            <span class="text-red-400 text-xs font-semibold">
+                                                ⚠️ No coincide con la captura
+                                                @if ($compra->monto_detectado)
+                                                    (detectado: S/ {{ number_format($compra->monto_detectado, 2) }})
+                                                @endif
+                                            </span>
+                                        @endif
+                                    </td>
                                     <td class="py-2 pr-4">{{ ucfirst($compra->metodo_pago) }}</td>
                                     <td class="py-2 pr-4" hidden="hidden">{{ $compra->numero_operacion }}</td>
                                     <td class="py-2 pr-4">

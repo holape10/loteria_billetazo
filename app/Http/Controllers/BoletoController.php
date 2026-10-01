@@ -62,11 +62,24 @@ class BoletoController extends Controller
             ? $request->file('comprobante')->store('comprobantes', 'public')
             : null;
 
+        $montoDetectado = null;
+        $requiereRevision = false;
+
+        if ($rutaComprobante && $montoTotal > 0) {
+            $rutaCompleta = \Illuminate\Support\Facades\Storage::disk('public')->path($rutaComprobante);
+            $resultadoOcr = app(\App\Services\OcrService::class)->extraerMontoDesdeImagen($rutaCompleta, $montoTotal);
+
+            $montoDetectado = $resultadoOcr['monto_detectado'];
+            $requiereRevision = $resultadoOcr['coincide'] === false;
+        }
+
         $compra = Compra::create([
             'cliente_id' => $cliente->id,
             'sorteo_id' => $sorteo->id,
             'cantidad_jugadas' => $cantidadJugadas,
             'monto_total' => $montoTotal,
+            'monto_detectado' => $montoDetectado,
+            'requiere_revision' => $requiereRevision,
             'metodo_pago' => $datos['metodo_pago'] ?? null,
             'numero_operacion' => $datos['numero_operacion'] ?? null,
             'comprobante' => $rutaComprobante,

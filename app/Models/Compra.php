@@ -15,7 +15,9 @@ class Compra extends Model
         'cliente_id',
         'sorteo_id',
         'cantidad_jugadas',
-        'monto_total',
+        'monto_total',        
+        'monto_detectado',
+        'requiere_revision',
         'metodo_pago',
         'numero_operacion',
         'comprobante',
@@ -26,6 +28,10 @@ class Compra extends Model
     {
         return $this->belongsTo(Cliente::class);
     }
+
+    protected $casts = [
+        'requiere_revision' => 'boolean',
+    ];
 
     public function sorteo()
     {

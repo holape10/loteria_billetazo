@@ -22,6 +22,10 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
+    'tesseract' => [
+        'path' => env('TESSERACT_PATH'),
+    ],
+
     'apiperu' => [
         'token' => env('APIPERU_TOKEN'),
     ],
