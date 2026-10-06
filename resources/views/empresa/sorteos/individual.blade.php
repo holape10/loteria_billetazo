@@ -538,12 +538,13 @@
                             div.innerHTML = `
                                 <div class="flex items-center gap-3">
                                     <span class="text-2xl">${emoji}</span>
-                                    <span class="font-bold text-white">${item.cliente}</span>
+                                    <span class="font-bold text-white nombre-cliente"></span>
                                 </div>
                                 <div class="${aciertosColor} font-black text-lg">
                                     ${item.coincidencias}/6 aciertos
                                 </div>
                             `;
+                            div.querySelector('.nombre-cliente').textContent = item.cliente;
                             lista.appendChild(div);
                         });
                     }

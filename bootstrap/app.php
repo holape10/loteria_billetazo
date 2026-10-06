@@ -17,6 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'sorteos' => \App\Http\Middleware\PuedeGestionarSorteos::class,
             'superadmin' => \App\Http\Middleware\EsSuperAdmin::class,
         ]);
+
+        $middleware->web(append: [
+            \App\Http\Middleware\VerificarCuentaActiva::class,
+            \App\Http\Middleware\CabecerasSeguridad::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

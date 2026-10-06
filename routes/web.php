@@ -112,24 +112,36 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/jugar', [BoletoController::class, 'create'])->name('boletos.create');
-    Route::post('/jugar/{sorteo}', [BoletoController::class, 'store'])->name('boletos.store');
+    Route::post('/jugar/{sorteo}', [BoletoController::class, 'store'])->middleware('throttle:10,1')->name('boletos.store');
     Route::get('mis-incidencias', [IncidenciaController::class, 'index'])->name('incidencias.index');
 
     Route::get('compras/{compra}/comprobante', [ComprobanteController::class, 'ver'])->name('compras.comprobante');
     Route::get('compras/{compra}/comprobante/pdf', [ComprobanteController::class, 'pdf'])->name('compras.comprobante.pdf');
+    Route::get('compras/{compra}/comprobante/imagen', [ComprobanteController::class, 'imagen'])->name('compras.comprobante.imagen');
+    Route::post('compras/{compra}/comprobante/subir', [ComprobanteController::class, 'subir'])
+        ->middleware('throttle:10,1')
+        ->name('compras.comprobante.subir');
 });
 
 Route::get('/dashboard', function () {
     $usuario = auth()->user();
     $boletos = collect();
     $creditosGratis = 0;
+    $comprasSinComprobante = collect();
 
     if ($usuario->cliente) {
         $boletos = $usuario->cliente->boletos()->with(['sorteo', 'compra'])->latest()->paginate(10);
         $creditosGratis = $usuario->cliente->jugadas_gratis;
+        $comprasSinComprobante = \App\Models\Compra::where('cliente_id', $usuario->cliente->id)
+            ->where('estado_pago', 'pendiente')
+            ->where('monto_total', '>', 0)
+            ->whereNull('comprobante')
+            ->with('sorteo')
+            ->latest()
+            ->get();
     }
 
-    return view('dashboard', compact('boletos', 'creditosGratis'));
+    return view('dashboard', compact('boletos', 'creditosGratis', 'comprasSinComprobante'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 require __DIR__.'/auth.php';

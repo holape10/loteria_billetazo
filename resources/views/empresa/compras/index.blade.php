@@ -64,7 +64,7 @@
                                     <td class="py-2 pr-4" hidden="hidden">{{ $compra->numero_operacion }}</td>
                                     <td class="py-2 pr-4">
                                         @if ($compra->comprobante)
-                                            <a href="{{ Storage::url($compra->comprobante) }}" target="_blank" class="text-blue-600">Ver imagen</a>
+                                            <a href="{{ route('compras.comprobante.imagen', $compra) }}" target="_blank" class="text-blue-600">Ver imagen</a>
                                         @endif
                                     </td>
                                     <td class="py-2 pr-4">{{ ucfirst($compra->estado_pago) }}</td>

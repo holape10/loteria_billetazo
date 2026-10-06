@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Sorteo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SorteoController extends Controller
 {
@@ -100,7 +101,9 @@ class SorteoController extends Controller
 
         $numerosGanadores = collect(range(1, 60))->shuffle()->take(6)->values()->all();
 
-        $this->procesarResultados($sorteo, $numerosGanadores);
+        if (! $this->procesarResultados($sorteo, $numerosGanadores)) {
+            return back()->with('error', 'Este sorteo ya fue jugado.');
+        }
 
         return redirect()->route('sorteos.index')
             ->with('exito', 'Sorteo realizado al azar. Números ganadores: ' . collect($numerosGanadores)->sort()->join(', '));
@@ -126,7 +129,9 @@ class SorteoController extends Controller
             'numeros.*' => 'integer|min:1|max:60|distinct',
         ]);
 
-        $this->procesarResultados($sorteo, $datos['numeros']);
+        if (! $this->procesarResultados($sorteo, $datos['numeros'])) {
+            return back()->with('error', 'Este sorteo ya fue jugado.');
+        }
 
         return redirect()->route('sorteos.index')
             ->with('exito', 'Sorteo realizado manualmente. Números ganadores: ' . collect($datos['numeros'])->sort()->join(', '));
@@ -189,7 +194,23 @@ class SorteoController extends Controller
         return $huboGanadorMayor ? 1000.00 : (float) $ultimoSorteo->premio_mayor + 200;
     }
 
-    private function procesarResultados(Sorteo $sorteo, array $numerosGanadores): void
+    private function procesarResultados(Sorteo $sorteo, array $numerosGanadores): bool
+    {
+        // Bloqueamos el sorteo: si llegan dos peticiones a la vez (doble clic), solo la primera lo juega
+        return DB::transaction(function () use ($sorteo, $numerosGanadores) {
+            $sorteo = Sorteo::whereKey($sorteo->id)->lockForUpdate()->first();
+
+            if ($sorteo->estado !== 'pendiente') {
+                return false;
+            }
+
+            $this->asignarPremios($sorteo, $numerosGanadores);
+
+            return true;
+        });
+    }
+
+    private function asignarPremios(Sorteo $sorteo, array $numerosGanadores): void
     {
         sort($numerosGanadores);
 

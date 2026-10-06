@@ -43,6 +43,18 @@ class Sorteo extends Model
         return \Carbon\Carbon::parse($this->fecha->format('Y-m-d') . ' ' . $this->hora);
     }
 
+    // Las horas de los sorteos se ingresan en hora de Perú
+    public function fechaHoraLima(): \Carbon\Carbon
+    {
+        return \Carbon\Carbon::parse($this->fecha->format('Y-m-d') . ' ' . $this->hora, 'America/Lima');
+    }
+
+    // Se deja de vender en cuanto llega la hora del sorteo, para que nadie compre conociendo números ya extraídos
+    public function ventasAbiertas(): bool
+    {
+        return $this->estado === 'pendiente' && $this->fechaHoraLima()->isFuture();
+    }
+
          public function ganadores()
     {
         return $this->boletos()

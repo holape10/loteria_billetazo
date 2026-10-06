@@ -140,7 +140,7 @@
                                 Foto del comprobante de pago <span class="text-gray-500">(opcional pero recomendado)</span>
                             </label>
                             <div class="relative">
-                                <input type="file" name="comprobante" accept="image/*" 
+                                <input type="file" name="comprobante" id="input-comprobante" accept="image/jpeg,image/png,image/webp" 
                                        class="w-full text-sm text-gray-300 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:bg-gradient-to-r file:from-dorado-500 file:to-dorado-600 file:text-black file:font-bold file:cursor-pointer hover:file:from-dorado-600 hover:file:to-dorado-700 transition-all duration-300 cursor-pointer">
                             </div>
                             <p class="text-xs text-gray-500 mt-2">📸 Sube una captura de tu transferencia para validar más rápido</p>
@@ -534,6 +534,38 @@
             }, 100);
         });
 
+        let confirmadoSinComprobante = false;
+
+        function abrirModalSinComprobante() {
+            document.getElementById('modal-sin-comprobante').classList.remove('hidden');
+        }
+
+        function cerrarModalSinComprobante() {
+            document.getElementById('modal-sin-comprobante').classList.add('hidden');
+        }
+
+        function comprarSinComprobante() {
+            confirmadoSinComprobante = true;
+            cerrarModalSinComprobante();
+            document.getElementById('form-boleto').requestSubmit();
+        }
+
+        function irASubirComprobante() {
+            cerrarModalSinComprobante();
+            const input = document.getElementById('input-comprobante');
+            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            input.closest('.relative').classList.add('ring-4', 'ring-dorado-500', 'rounded-xl');
+            setTimeout(() => input.closest('.relative').classList.remove('ring-4', 'ring-dorado-500', 'rounded-xl'), 2500);
+            input.click();
+        }
+
+        // Si cambia el archivo, la confirmación previa ya no aplica
+        document.getElementById('input-comprobante').addEventListener('change', () => confirmadoSinComprobante = false);
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') cerrarModalSinComprobante();
+        });
+
         document.getElementById('form-boleto').addEventListener('submit', function (e) {
             const bloques = document.querySelectorAll('.jugada-block');
             for (const bloque of bloques) {
@@ -553,6 +585,16 @@
                     alert('⚠️ Cada jugada debe tener exactamente 6 números seleccionados.');
                     return;
                 }
+            }
+
+            // Si hay monto por pagar y no adjuntó captura, pedimos confirmación antes de enviar
+            const montoTotal = parseFloat(document.getElementById('total-monto').textContent) || 0;
+            const tieneComprobante = document.getElementById('input-comprobante').files.length > 0;
+
+            if (montoTotal > 0 && !tieneComprobante && !confirmadoSinComprobante) {
+                e.preventDefault();
+                abrirModalSinComprobante();
+                return;
             }
             
             // Animación de loading en el botón de submit
@@ -576,6 +618,26 @@
         // Crear primera jugada
         crearJugada();
     </script>
+    <!-- Modal: confirmar compra sin comprobante -->
+    <div id="modal-sin-comprobante" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onclick="cerrarModalSinComprobante()">
+        <div class="w-full max-w-md bg-gray-900 border-2 border-dorado-500 rounded-2xl p-6 text-center text-white shadow-2xl" onclick="event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="titulo-sin-comprobante">
+            <div class="text-5xl mb-3">🧾</div>
+            <h3 id="titulo-sin-comprobante" class="text-xl font-bold text-dorado-400 mb-2">¿Comprar sin enviar el comprobante?</h3>
+            <p class="text-gray-300 text-sm mb-6">
+                No adjuntaste la captura de tu pago. Sin ella, la validación de tu compra puede demorar.
+                También podrás subirla después desde <span class="text-dorado-300 font-semibold">Mi cuenta</span>.
+            </p>
+            <div class="flex flex-col-reverse sm:flex-row gap-3">
+                <button type="button" onclick="comprarSinComprobante()" class="flex-1 px-4 py-3 rounded-xl border-2 border-gray-600 text-gray-200 font-semibold hover:bg-gray-800">
+                    Sí, comprar sin comprobante
+                </button>
+                <button type="button" onclick="irASubirComprobante()" class="flex-1 px-4 py-3 rounded-xl bg-dorado-500 hover:bg-dorado-600 text-black font-bold">
+                    No, subir comprobante
+                </button>
+            </div>
+        </div>
+    </div>
+
         <!-- Modal QR expandido -->
     <div id="modal-qr" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onclick="cerrarModalQr(event)">
         <div class="relative max-w-sm w-full text-center" onclick="event.stopPropagation()">

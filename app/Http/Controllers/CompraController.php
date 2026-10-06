@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Compra;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CompraController extends Controller
 {
@@ -28,12 +29,22 @@ class CompraController extends Controller
 
     public function aprobar(Compra $compra)
     {
-        if ($compra->estado_pago !== 'pendiente') {
+        $aprobada = DB::transaction(function () use ($compra) {
+            $compra = Compra::whereKey($compra->id)->lockForUpdate()->first();
+
+            if ($compra->estado_pago !== 'pendiente') {
+                return false;
+            }
+
+            $compra->update(['estado_pago' => 'pagado']);
+            $compra->cliente->increment('juegos', $compra->cantidad_jugadas);
+
+            return true;
+        });
+
+        if (! $aprobada) {
             return back()->with('error', 'Esta compra ya fue procesada.');
         }
-
-        $compra->update(['estado_pago' => 'pagado']);
-        $compra->cliente->increment('juegos', $compra->cantidad_jugadas);
 
         return back()->with('exito', 'Compra aprobada correctamente.');
     }

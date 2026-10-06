@@ -24,6 +24,8 @@ class IncidenciaController extends Controller
     {
         $cliente = auth()->user()->cliente;
 
+        abort_unless($cliente, 403, 'Esta sección es solo para jugadores.');
+
         $incidencias = Incidencia::whereHas('compra', function ($q) use ($cliente) {
             $q->where('cliente_id', $cliente->id);
         })->with('compra.sorteo')->latest()->get();

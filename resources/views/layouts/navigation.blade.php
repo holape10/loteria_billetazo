@@ -6,6 +6,16 @@
                     <a href="{{ route('welcome') }}">
                         <x-application-logo class="block h-9 w-auto" />
                     </a>
+
+                    @if (auth()->user()->rol === 'jugador')
+                        @php $noLeidasMovil = auth()->user()->cliente?->incidenciasNoLeidas() ?? 0; @endphp
+                        <a href="{{ route('incidencias.index') }}" class="sm:hidden relative inline-flex items-center ml-3 p-1" aria-label="Notificaciones{{ $noLeidasMovil > 0 ? " ($noLeidasMovil sin leer)" : '' }}">
+                            <span class="text-2xl campana-animada">🔔</span>
+                            @if ($noLeidasMovil > 0)
+                                <span class="absolute -top-0.5 -right-1 bg-red-600 text-white text-[10px] font-bold rounded-full min-w-[1rem] h-4 px-1 flex items-center justify-center">{{ $noLeidasMovil }}</span>
+                            @endif
+                        </a>
+                    @endif
                 </div>
 
                 <div class="hidden space-x-6 sm:-my-px sm:ml-10 sm:flex">
@@ -148,11 +158,6 @@
             @else
                 <x-responsive-nav-link :href="route('boletos.create')" :active="request()->routeIs('boletos.create')">
                     {{ __('Jugar') }}
-                </x-responsive-nav-link>
-
-                @php $noLeidasMovil = auth()->user()->cliente?->incidenciasNoLeidas() ?? 0; @endphp
-                <x-responsive-nav-link :href="route('incidencias.index')">
-                    🔔 Notificaciones @if ($noLeidasMovil > 0) <span class="ml-1 bg-red-600 text-white text-xs rounded-full px-2">{{ $noLeidasMovil }}</span> @endif
                 </x-responsive-nav-link>
             @endif
         </div>
