@@ -54,6 +54,7 @@ Route::post('/dni/consultar', [DniController::class, 'consultar'])
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('clientes', ClienteController::class);
+    Route::post('clientes/{cliente}/restablecer-password', [ClienteController::class, 'restablecerPassword'])->name('clientes.restablecer-password');
 
     Route::get('sorteos/crear', [SorteoController::class, 'create'])->name('sorteos.create');
     Route::post('sorteos', [SorteoController::class, 'store'])->name('sorteos.store');

@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\VerificarCuentaActiva::class,
             \App\Http\Middleware\CabecerasSeguridad::class,
+            \App\Http\Middleware\ForzarCambioPassword::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

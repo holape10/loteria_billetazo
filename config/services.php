@@ -26,6 +26,10 @@ return [
         'path' => env('TESSERACT_PATH'),
     ],
 
+    'soporte' => [
+        'whatsapp' => env('SOPORTE_WHATSAPP'),
+    ],
+
     'apiperu' => [
         'token' => env('APIPERU_TOKEN'),
     ],

@@ -3,43 +3,70 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cliente;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class PasswordResetLinkController extends Controller
 {
-    /**
-     * Display the password reset link request view.
-     */
     public function create(): View
     {
-        return view('auth.forgot-password');
+        return view('auth.forgot-password', [
+            'whatsappSoporte' => config('services.soporte.whatsapp'),
+        ]);
     }
 
     /**
-     * Handle an incoming password reset link request.
-     *
-     * @throws ValidationException
+     * El jugador puede escribir su correo o su DNI; el enlace siempre se envía al correo registrado.
      */
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'email' => ['required', 'email'],
+            'identificador' => ['required', 'string', 'max:255'],
+        ], [
+            'identificador.required' => 'Escribe tu correo o tu DNI.',
         ]);
 
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+        $usuario = $this->buscarUsuario(trim($request->input('identificador')));
 
-        return $status == Password::RESET_LINK_SENT
-                    ? back()->with('status', __($status))
-                    : back()->withInput($request->only('email'))
-                        ->withErrors(['email' => __($status)]);
+        if (! $usuario) {
+            return back()->withInput()->withErrors(['identificador' => __('passwords.user')]);
+        }
+
+        if (! $usuario->activo) {
+            return back()->withInput()->withErrors(['identificador' => 'Tu cuenta está inactiva. Contacta al administrador.']);
+        }
+
+        $estado = Password::sendResetLink(['email' => $usuario->email]);
+
+        if ($estado !== Password::RESET_LINK_SENT) {
+            return back()->withInput()->withErrors(['identificador' => __($estado)]);
+        }
+
+        return back()->with('status', 'Te enviamos un enlace a ' . $this->ocultarCorreo($usuario->email)
+            . '. Ábrelo para crear tu nueva contraseña (revisa también la carpeta de spam o promociones).');
+    }
+
+    private function buscarUsuario(string $identificador): ?User
+    {
+        if (preg_match('/^\d{8}$/', $identificador)) {
+            $clienteId = Cliente::where('dni', $identificador)->value('id');
+
+            return $clienteId ? User::where('cliente_id', $clienteId)->first() : null;
+        }
+
+        return User::where('email', Str::lower($identificador))->first();
+    }
+
+    // "jacker@jacker.com" → "ja****@jacker.com"
+    private function ocultarCorreo(string $correo): string
+    {
+        [$usuario, $dominio] = explode('@', $correo, 2) + [1 => ''];
+
+        return Str::substr($usuario, 0, 2) . str_repeat('*', max(Str::length($usuario) - 2, 3)) . '@' . $dominio;
     }
 }

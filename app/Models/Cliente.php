@@ -26,6 +26,11 @@ class Cliente extends Model
         'estado' => 'boolean',
     ];
 
+    public function usuario()
+    {
+        return $this->hasOne(User::class);
+    }
+
     public function boletos()
     {
         return $this->hasMany(Boleto::class);
