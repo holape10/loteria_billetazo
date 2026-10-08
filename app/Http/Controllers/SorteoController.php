@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Sorteo;
+use App\Services\SorteoEnVivoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -44,6 +45,10 @@ class SorteoController extends Controller
             return back()->with('error', 'Solo puedes editar sorteos que todavía no se han jugado.');
         }
 
+        if ($sorteo->estaEnVivo()) {
+            return back()->with('error', 'No puedes modificar un sorteo que se está jugando en vivo.');
+        }
+
         return view('empresa.sorteos.edit', compact('sorteo'));
     }
 
@@ -51,6 +56,10 @@ class SorteoController extends Controller
     {
         if ($sorteo->estado !== 'pendiente') {
             return back()->with('error', 'Solo puedes editar sorteos que todavía no se han jugado.');
+        }
+
+        if ($sorteo->estaEnVivo()) {
+            return back()->with('error', 'No puedes modificar un sorteo que se está jugando en vivo.');
         }
 
         $datos = $request->validate([
@@ -67,6 +76,10 @@ class SorteoController extends Controller
     {
         if ($sorteo->estado !== 'pendiente') {
             return back()->with('error', 'Solo puedes eliminar sorteos que todavía no se han jugado.');
+        }
+
+        if ($sorteo->estaEnVivo()) {
+            return back()->with('error', 'No puedes modificar un sorteo que se está jugando en vivo.');
         }
 
         if ($sorteo->boletos()->exists()) {
@@ -99,6 +112,10 @@ class SorteoController extends Controller
             return back()->with('error', 'Este sorteo ya fue jugado.');
         }
 
+        if ($sorteo->estaEnVivo()) {
+            return back()->with('error', 'Este sorteo ya se está jugando en vivo. Termínalo desde la pantalla del sorteo en vivo.');
+        }
+
         $numerosGanadores = collect(range(1, 60))->shuffle()->take(6)->values()->all();
 
         if (! $this->procesarResultados($sorteo, $numerosGanadores)) {
@@ -115,6 +132,10 @@ class SorteoController extends Controller
             return back()->with('error', 'Este sorteo ya fue jugado.');
         }
 
+        if ($sorteo->estaEnVivo()) {
+            return redirect()->route('sorteos.individual', $sorteo)->with('error', 'Este sorteo ya se está jugando en vivo.');
+        }
+
         return view('empresa.sorteos.realizar-manual', compact('sorteo'));
     }
 
@@ -122,6 +143,10 @@ class SorteoController extends Controller
     {
         if ($sorteo->estado !== 'pendiente') {
             return back()->with('error', 'Este sorteo ya fue jugado.');
+        }
+
+        if ($sorteo->estaEnVivo()) {
+            return back()->with('error', 'Este sorteo ya se está jugando en vivo. Termínalo desde la pantalla del sorteo en vivo.');
         }
 
         $datos = $request->validate([
@@ -137,48 +162,46 @@ class SorteoController extends Controller
             ->with('exito', 'Sorteo realizado manualmente. Números ganadores: ' . collect($datos['numeros'])->sort()->join(', '));
     }
 
-    public function individual(Sorteo $sorteo)
+    public function individual(Sorteo $sorteo, SorteoEnVivoService $enVivo)
     {
         if ($sorteo->estado !== 'pendiente') {
             return back()->with('error', 'Este sorteo ya fue jugado.');
         }
 
-        return view('empresa.sorteos.individual', compact('sorteo'));
+        $enCarrera = $enVivo->enCarrera($sorteo, $sorteo->numeros_en_vivo ?? []);
+
+        return view('empresa.sorteos.individual', compact('sorteo', 'enCarrera'));
     }
 
-        public function verificarParcial(Request $request, Sorteo $sorteo)
+    public function extraer(Sorteo $sorteo, SorteoEnVivoService $enVivo)
     {
-        $datos = $request->validate([
-            'numeros' => 'required|array',
-            'numeros.*' => 'integer|min:1|max:60',
-        ]);
+        $extraidos = $enVivo->extraer($sorteo);
 
-        $extraidos = $datos['numeros'];
-
-        $boletos = $sorteo->boletos()
-            ->whereHas('compra', fn ($q) => $q->where('estado_pago', 'pagado'))
-            ->with('cliente')
-            ->get();
-
-        $enCarrera = [];
-
-        foreach ($boletos as $boleto) {
-            $numerosBoleto = [
-                $boleto->numero_1, $boleto->numero_2, $boleto->numero_3,
-                $boleto->numero_4, $boleto->numero_5, $boleto->numero_6,
-            ];
-
-            $coincidencias = count(array_intersect($numerosBoleto, $extraidos));
-
-            if ($coincidencias === count($extraidos)) {
-                $enCarrera[] = [
-                    'cliente' => $boleto->cliente->nombre,
-                    'coincidencias' => $coincidencias,
-                ];
-            }
+        if ($extraidos === null) {
+            return response()->json(['mensaje' => 'El sorteo ya no admite más extracciones.'], 422);
         }
 
-        return response()->json(['en_carrera' => $enCarrera]);
+        return response()->json([
+            'numero' => end($extraidos),
+            'extraidos' => $extraidos,
+            'en_carrera' => count($extraidos) >= 3 ? $enVivo->enCarrera($sorteo, $extraidos) : [],
+        ]);
+    }
+
+    public function confirmarEnVivo(Sorteo $sorteo)
+    {
+        $extraidos = $sorteo->numeros_en_vivo ?? [];
+
+        if (count($extraidos) !== SorteoEnVivoService::TOTAL_NUMEROS) {
+            return back()->with('error', 'Aún no se han extraído los 6 números.');
+        }
+
+        if (! $this->procesarResultados($sorteo, $extraidos)) {
+            return back()->with('error', 'Este sorteo ya fue jugado.');
+        }
+
+        return redirect()->route('sorteos.index')
+            ->with('exito', 'Sorteo en vivo confirmado. Números ganadores: ' . collect($extraidos)->sort()->join(', '));
     }
 
     private function calcularProximoPremioMayor(): float
@@ -279,6 +302,6 @@ class SorteoController extends Controller
             }
         }
 
-        $sorteo->update(['estado' => 'cerrado']);
+        $sorteo->update(['estado' => 'cerrado', 'cerrado_en' => now()]);
     }
 }

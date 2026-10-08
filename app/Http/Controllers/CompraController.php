@@ -14,17 +14,27 @@ class CompraController extends Controller
 
         $compras = Compra::with(['cliente', 'sorteo'])
             ->when($busqueda, function ($query, $busqueda) {
-                $query->whereHas('cliente', function ($q) use ($busqueda) {
-                    $q->where('nombre', 'like', "%{$busqueda}%")
-                        ->orWhere('dni', 'like', "%{$busqueda}%")
-                        ->orWhere('celular', 'like', "%{$busqueda}%");
+                $query->where(function ($q) use ($busqueda) {
+                    $q->where('numero_operacion', 'like', "%{$busqueda}%")
+                        ->orWhereHas('cliente', function ($q) use ($busqueda) {
+                            $q->where('nombre', 'like', "%{$busqueda}%")
+                                ->orWhere('dni', 'like', "%{$busqueda}%")
+                                ->orWhere('celular', 'like', "%{$busqueda}%");
+                        });
                 });
             })
             ->latest()
             ->paginate(15)
             ->withQueryString();
 
-        return view('empresa.compras.index', compact('compras', 'busqueda'));
+        // Números de operación que aparecen en más de una compra (posible voucher reutilizado)
+        $operacionesRepetidas = Compra::whereIn('numero_operacion', $compras->pluck('numero_operacion')->filter())
+            ->where('estado_pago', '!=', 'rechazado')
+            ->groupBy('numero_operacion')
+            ->havingRaw('COUNT(*) > 1')
+            ->pluck('numero_operacion');
+
+        return view('empresa.compras.index', compact('compras', 'busqueda', 'operacionesRepetidas'));
     }
 
     public function aprobar(Compra $compra)

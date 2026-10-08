@@ -78,10 +78,17 @@ class BoletoController extends Controller
             return back()->withErrors(['metodo_pago' => 'Selecciona un método de pago.'])->withInput();
         }
 
-        $datosComprobante = ['comprobante' => null, 'monto_detectado' => null, 'requiere_revision' => false];
+        $numeroOperacion = filled($datos['numero_operacion'] ?? null) ? trim($datos['numero_operacion']) : null;
+
+        $datosComprobante = [
+            'comprobante' => null,
+            'monto_detectado' => null,
+            'numero_operacion' => $numeroOperacion,
+            'requiere_revision' => $comprobantes->operacionRepetida($numeroOperacion),
+        ];
 
         if ($request->hasFile('comprobante')) {
-            $datosComprobante = $comprobantes->guardar($request->file('comprobante'), $montoTotal);
+            $datosComprobante = $comprobantes->guardar($request->file('comprobante'), $montoTotal, $numeroOperacion);
         }
 
         try {
@@ -99,7 +106,6 @@ class BoletoController extends Controller
                     'cantidad_jugadas' => $cantidadJugadas,
                     'monto_total' => $montoTotal,
                     'metodo_pago' => $datos['metodo_pago'] ?? null,
-                    'numero_operacion' => $datos['numero_operacion'] ?? null,
                     'estado_pago' => $montoTotal == 0 ? 'pagado' : 'pendiente',
                 ], $datosComprobante));
 

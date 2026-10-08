@@ -8,6 +8,12 @@
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
+            @if (session('error'))
+                <div class="mb-4 p-3 bg-red-100 text-red-700 rounded">{{ session('error') }}</div>
+            @endif
+
+            <p class="mb-4 text-sm text-gray-400">📺 Los jugadores están viendo este sorteo en tiempo real desde su cuenta.</p>
+
             <!-- LAYOUT PRINCIPAL: 2 COLUMNAS -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 
@@ -74,9 +80,8 @@
                     </button>
 
                     <!-- BOTÓN CONFIRMAR -->
-                    <form action="{{ route('sorteos.realizar-manual', $sorteo) }}" method="POST" id="form-confirmar" onsubmit="return confirmarSorteo()">
+                    <form action="{{ route('sorteos.confirmar-en-vivo', $sorteo) }}" method="POST" id="form-confirmar" onsubmit="return confirmarSorteo()">
                         @csrf
-                        <div id="numeros-hidden"></div>
                         <button type="submit" 
                                 id="btn-confirmar" 
                                 class="hidden w-full px-8 py-5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-black text-xl rounded-2xl shadow-2xl transform transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(34,197,94,0.6)] animate-pulse">
@@ -298,9 +303,10 @@
     </style>
 
     <script>
-        let disponibles = Array.from({ length: 60 }, (_, i) => i + 1);
-        let extraidos = [];
+        // Los números los elige el servidor; si se recarga la página se retoma donde quedó
+        let extraidos = @json(array_map('intval', $sorteo->numeros_en_vivo ?? []));
         const maxNumeros = 6;
+        const URL_EXTRAER = @json(route('sorteos.extraer', $sorteo));
 
         // Crear partículas de explosión
         function crearExplosion() {
@@ -376,6 +382,50 @@
             animar();
         }
 
+        function textoBotonSiguiente() {
+            return `
+                <span class="text-2xl">🎱</span>
+                <span>Sacar número ${extraidos.length + 1}</span>
+                <span class="text-2xl">✨</span>
+            `;
+        }
+
+        function actualizarBotones() {
+            const btnExtraer = document.getElementById('btn-extraer');
+            if (extraidos.length < maxNumeros) {
+                btnExtraer.disabled = false;
+                btnExtraer.innerHTML = textoBotonSiguiente();
+            } else {
+                btnExtraer.classList.add('hidden');
+                document.getElementById('btn-confirmar').classList.remove('hidden');
+            }
+        }
+
+        function marcarBolaExtraida(numero, animar) {
+            const bola = document.querySelector(`.bola[data-numero="${numero}"]`);
+            if (!bola) return;
+            if (animar) {
+                bola.classList.add('saliente');
+                setTimeout(() => bola.classList.add('extraida'), 600);
+            } else {
+                bola.classList.add('saliente', 'extraida');
+            }
+        }
+
+        function pedirNumero() {
+            return fetch(URL_EXTRAER, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                },
+            }).then(async res => {
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.mensaje || 'No se pudo extraer el número. Inténtalo de nuevo.');
+                return data;
+            });
+        }
+
         function iniciarExtraccion() {
             if (extraidos.length >= maxNumeros) return;
 
@@ -383,15 +433,15 @@
             const btnExtraer = document.getElementById('btn-extraer');
             const resultado = document.getElementById('resultado-actual');
             const mensaje = document.getElementById('mensaje-anticipacion');
-            
+
             contenedorBolas.classList.add('agitando');
             btnExtraer.disabled = true;
             btnExtraer.innerHTML = '<span class="animate-spin text-2xl">🎲</span><span>Mezclando...</span>';
-            
+
             mensaje.classList.remove('hidden');
             resultado.textContent = '?';
             resultado.classList.remove('reveal', 'pop');
-            
+
             // Countdown visual
             let countdown = 3;
             const countdownInterval = setInterval(() => {
@@ -402,68 +452,57 @@
                     countdown--;
                 }
             }, 500);
-            
-            setTimeout(() => {
-                clearInterval(countdownInterval);
-                mensaje.classList.add('hidden');
-                contenedorBolas.classList.remove('agitando');
-                
-                const indice = Math.floor(Math.random() * disponibles.length);
-                const numeroElegido = disponibles[indice];
-                disponibles.splice(indice, 1);
-                extraidos.push(numeroElegido);
-                
-                const bola = document.querySelector(`.bola[data-numero="${numeroElegido}"]`);
-                if (bola) {
-                    bola.classList.add('saliente');
-                    setTimeout(() => bola.classList.add('extraida'), 600);
-                }
-                
-                setTimeout(() => {
-                    resultado.textContent = numeroElegido;
-                    resultado.classList.add('reveal');
-                    
-                    const glow = document.getElementById('numero-glow');
-                    glow.classList.remove('glow-active');
-                    void glow.offsetWidth;
-                    glow.classList.add('glow-active');
-                    glow.style.opacity = '1';
-                    setTimeout(() => glow.style.opacity = '0', 1000);
-                    
-                    crearExplosion();
-                    
-                    if (navigator.vibrate) {
-                        navigator.vibrate([100, 50, 100]);
+
+            const animacion = new Promise(resolve => setTimeout(resolve, 2500));
+
+            Promise.all([pedirNumero(), animacion])
+                .then(([data]) => {
+                    clearInterval(countdownInterval);
+                    mensaje.classList.add('hidden');
+                    contenedorBolas.classList.remove('agitando');
+
+                    const numeroElegido = data.numero;
+                    extraidos = data.extraidos;
+                    marcarBolaExtraida(numeroElegido, true);
+
+                    setTimeout(() => {
+                        resultado.textContent = numeroElegido;
+                        resultado.classList.add('reveal');
+
+                        const glow = document.getElementById('numero-glow');
+                        glow.classList.remove('glow-active');
+                        void glow.offsetWidth;
+                        glow.classList.add('glow-active');
+                        glow.style.opacity = '1';
+                        setTimeout(() => glow.style.opacity = '0', 1000);
+
+                        crearExplosion();
+
+                        if (navigator.vibrate) {
+                            navigator.vibrate([100, 50, 100]);
+                        }
+
+                        if (extraidos.length === maxNumeros) {
+                            setTimeout(lanzarConfetti, 500);
+                        }
+                    }, 300);
+
+                    actualizarListaExtraidos();
+
+                    if (extraidos.length >= 3) {
+                        pintarEnCarrera(data.en_carrera);
                     }
-                    
-                    if (extraidos.length === 6) {
-                        setTimeout(lanzarConfetti, 500);
-                    }
-                    
-                }, 300);
-                
-                actualizarListaExtraidos();
-                actualizarInputsOcultos();
-                
-                if (extraidos.length >= 3) {
-                    verificarEnVivo();
-                }
-                
-                setTimeout(() => {
-                    if (extraidos.length < maxNumeros) {
-                        btnExtraer.disabled = false;
-                        btnExtraer.innerHTML = `
-                            <span class="text-2xl">🎱</span>
-                            <span>Sacar número ${extraidos.length + 1}</span>
-                            <span class="text-2xl">✨</span>
-                        `;
-                    } else {
-                        btnExtraer.classList.add('hidden');
-                        document.getElementById('btn-confirmar').classList.remove('hidden');
-                    }
-                }, 1000);
-                
-            }, 2500);
+
+                    setTimeout(actualizarBotones, 1000);
+                })
+                .catch(error => {
+                    clearInterval(countdownInterval);
+                    mensaje.classList.add('hidden');
+                    contenedorBolas.classList.remove('agitando');
+                    resultado.textContent = extraidos.length ? extraidos[extraidos.length - 1] : '?';
+                    alert('⚠️ ' + error.message);
+                    actualizarBotones();
+                });
         }
 
         function actualizarListaExtraidos() {
@@ -493,65 +532,52 @@
             });
         }
 
-        function actualizarInputsOcultos() {
-            const contenedor = document.getElementById('numeros-hidden');
-            contenedor.innerHTML = '';
-            extraidos.forEach(n => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'numeros[]';
-                input.value = n;
-                contenedor.appendChild(input);
-            });
-        }
-
         function confirmarSorteo() {
             return confirm('¿CONFIRMAR estos 6 números como resultado oficial del sorteo?');
         }
 
-        function verificarEnVivo() {
-            fetch('{{ route('sorteos.verificar-parcial', $sorteo) }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                },
-                body: JSON.stringify({ numeros: extraidos }),
-            })
-                .then(res => res.json())
-                .then(data => {
-                    const contenedor = document.getElementById('en-vivo');
-                    const lista = document.getElementById('en-vivo-lista');
-                    lista.innerHTML = '';
-                    
-                    if (data.en_carrera.length === 0) {
-                        lista.innerHTML = '<p class="text-gray-400 col-span-full text-center py-4">🎲 Nadie en carrera por ahora...</p>';
-                    } else {
-                        data.en_carrera.forEach((item, index) => {
-                            const div = document.createElement('div');
-                            div.className = 'bg-gray-800/50 border-2 border-dorado-600/30 rounded-xl p-4 flex items-center justify-between';
-                            div.style.animation = `fade-in 0.5s ease-out ${index * 100}ms backwards`;
-                            
-                            const aciertosColor = item.coincidencias >= 3 ? 'text-green-400' : 'text-dorado-400';
-                            const emoji = item.coincidencias >= 4 ? '' : (item.coincidencias >= 3 ? '⭐' : '🎯');
-                            
-                            div.innerHTML = `
-                                <div class="flex items-center gap-3">
-                                    <span class="text-2xl">${emoji}</span>
-                                    <span class="font-bold text-white nombre-cliente"></span>
-                                </div>
-                                <div class="${aciertosColor} font-black text-lg">
-                                    ${item.coincidencias}/6 aciertos
-                                </div>
-                            `;
-                            div.querySelector('.nombre-cliente').textContent = item.cliente;
-                            lista.appendChild(div);
-                        });
-                    }
-                    
-                    contenedor.classList.remove('hidden');
-                })
-                .catch(() => {});
+        function pintarEnCarrera(enCarrera) {
+            const contenedor = document.getElementById('en-vivo');
+            const lista = document.getElementById('en-vivo-lista');
+            lista.innerHTML = '';
+
+            if (enCarrera.length === 0) {
+                lista.innerHTML = '<p class="text-gray-400 col-span-full text-center py-4">🎲 Nadie en carrera por ahora...</p>';
+            } else {
+                enCarrera.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-gray-800/50 border-2 border-dorado-600/30 rounded-xl p-4 flex items-center justify-between';
+                    div.style.animation = `fade-in 0.5s ease-out ${index * 100}ms backwards`;
+
+                    const aciertosColor = item.coincidencias >= 3 ? 'text-green-400' : 'text-dorado-400';
+                    const emoji = item.coincidencias >= 4 ? '' : (item.coincidencias >= 3 ? '⭐' : '🎯');
+
+                    div.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">${emoji}</span>
+                            <span class="font-bold text-white nombre-cliente"></span>
+                        </div>
+                        <div class="${aciertosColor} font-black text-lg">
+                            ${item.coincidencias}/6 aciertos
+                        </div>
+                    `;
+                    div.querySelector('.nombre-cliente').textContent = item.cliente;
+                    lista.appendChild(div);
+                });
+            }
+
+            contenedor.classList.remove('hidden');
+        }
+
+        // Retomar un sorteo en vivo que ya tenía números (por ejemplo, tras recargar la página)
+        if (extraidos.length > 0) {
+            extraidos.forEach(n => marcarBolaExtraida(n, false));
+            document.getElementById('resultado-actual').textContent = extraidos[extraidos.length - 1];
+            actualizarListaExtraidos();
+            if (extraidos.length >= 3) {
+                pintarEnCarrera(@json($enCarrera));
+            }
+            actualizarBotones();
         }
     </script>
 </x-app-layout>

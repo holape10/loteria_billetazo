@@ -12,6 +12,7 @@ use App\Http\Controllers\GanadorController;
 use App\Http\Controllers\ComprobanteController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\IncidenciaController;
+use App\Http\Controllers\EnVivoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -82,7 +83,8 @@ Route::middleware(['auth', 'sorteos'])->group(function () {
     Route::get('sorteos/{sorteo}/realizar-manual', [SorteoController::class, 'formularioManual'])->name('sorteos.realizar-manual.form');
     Route::post('sorteos/{sorteo}/realizar-manual', [SorteoController::class, 'realizarManual'])->name('sorteos.realizar-manual');
     Route::get('sorteos/{sorteo}/individual', [SorteoController::class, 'individual'])->name('sorteos.individual');
-    Route::post('sorteos/{sorteo}/verificar-parcial', [SorteoController::class, 'verificarParcial'])->name('sorteos.verificar-parcial');
+    Route::post('sorteos/{sorteo}/extraer', [SorteoController::class, 'extraer'])->name('sorteos.extraer');
+    Route::post('sorteos/{sorteo}/confirmar-en-vivo', [SorteoController::class, 'confirmarEnVivo'])->name('sorteos.confirmar-en-vivo');
 });
 
 /*
@@ -114,6 +116,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/jugar', [BoletoController::class, 'create'])->name('boletos.create');
     Route::post('/jugar/{sorteo}', [BoletoController::class, 'store'])->middleware('throttle:10,1')->name('boletos.store');
     Route::get('mis-incidencias', [IncidenciaController::class, 'index'])->name('incidencias.index');
+
+    Route::get('en-vivo', [EnVivoController::class, 'index'])->name('en-vivo');
+    Route::get('en-vivo/estado', [EnVivoController::class, 'estado'])->middleware('throttle:60,1')->name('en-vivo.estado');
 
     Route::get('compras/{compra}/comprobante', [ComprobanteController::class, 'ver'])->name('compras.comprobante');
     Route::get('compras/{compra}/comprobante/pdf', [ComprobanteController::class, 'pdf'])->name('compras.comprobante.pdf');

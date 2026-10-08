@@ -26,11 +26,17 @@ class Sorteo extends Model
         'estado',
         'hora',
         'premio_tres_aciertos',
+        'numeros_en_vivo',
+        'en_vivo_desde',
+        'cerrado_en',
     ];
 
 
     protected $casts = [
         'fecha' => 'date',
+        'numeros_en_vivo' => 'array',
+        'en_vivo_desde' => 'datetime',
+        'cerrado_en' => 'datetime',
     ];
 
         public function boletos()
@@ -52,7 +58,25 @@ class Sorteo extends Model
     // Se deja de vender en cuanto llega la hora del sorteo, para que nadie compre conociendo números ya extraídos
     public function ventasAbiertas(): bool
     {
-        return $this->estado === 'pendiente' && $this->fechaHoraLima()->isFuture();
+        return $this->estado === 'pendiente' && ! $this->estaEnVivo() && $this->fechaHoraLima()->isFuture();
+    }
+
+    public function estaEnVivo(): bool
+    {
+        return $this->estado === 'pendiente' && ! empty($this->numeros_en_vivo);
+    }
+
+    // Números ganadores en el orden en que salieron (si se jugó en vivo) o los oficiales ordenados
+    public function numerosExtraidos(): array
+    {
+        if (! empty($this->numeros_en_vivo)) {
+            return array_map('intval', $this->numeros_en_vivo);
+        }
+
+        return array_values(array_filter([
+            $this->numero_1, $this->numero_2, $this->numero_3,
+            $this->numero_4, $this->numero_5, $this->numero_6,
+        ]));
     }
 
          public function ganadores()

@@ -81,7 +81,16 @@ class ComprobanteController extends Controller
 
         $anterior = $compra->comprobante;
 
-        $compra->update($comprobantes->guardar($request->file('comprobante'), (float) $compra->monto_total));
+        // Si reemplaza una captura, el número de operación se vuelve a leer de la nueva imagen
+        $datos = $comprobantes->guardar(
+            $request->file('comprobante'),
+            (float) $compra->monto_total,
+            $anterior ? null : $compra->numero_operacion,
+            $compra->id
+        );
+        $datos['numero_operacion'] ??= $compra->numero_operacion;
+
+        $compra->update($datos);
 
         if ($anterior && $anterior !== $compra->comprobante) {
             $comprobantes->eliminar($anterior);

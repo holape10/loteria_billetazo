@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Compra;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
@@ -12,7 +13,10 @@ class ComprobantePagoService
 
     public const REGLAS = ['image', 'mimes:jpg,jpeg,png,webp', 'max:4096'];
 
-    public function guardar(UploadedFile $archivo, float $montoEsperado): array
+    /**
+     * Guarda la captura y la lee con OCR. Si el jugador no escribió el número de operación, se usa el detectado.
+     */
+    public function guardar(UploadedFile $archivo, float $montoEsperado, ?string $numeroOperacion = null, ?int $exceptoCompraId = null): array
     {
         $ruta = $archivo->store('comprobantes', self::DISCO);
 
@@ -20,20 +24,35 @@ class ComprobantePagoService
         $requiereRevision = false;
 
         if ($montoEsperado > 0) {
-            $resultadoOcr = app(OcrService::class)->extraerMontoDesdeImagen(
+            $resultadoOcr = app(OcrService::class)->analizarComprobante(
                 Storage::disk(self::DISCO)->path($ruta),
                 $montoEsperado
             );
 
             $montoDetectado = $resultadoOcr['monto_detectado'];
             $requiereRevision = $resultadoOcr['coincide'] === false;
+            $numeroOperacion = filled($numeroOperacion) ? $numeroOperacion : $resultadoOcr['numero_operacion'];
         }
 
         return [
             'comprobante' => $ruta,
             'monto_detectado' => $montoDetectado,
-            'requiere_revision' => $requiereRevision,
+            'numero_operacion' => $numeroOperacion,
+            // Un mismo voucher usado en otra compra es la señal más común de fraude
+            'requiere_revision' => $requiereRevision || $this->operacionRepetida($numeroOperacion, $exceptoCompraId),
         ];
+    }
+
+    public function operacionRepetida(?string $numeroOperacion, ?int $exceptoCompraId = null): bool
+    {
+        if (blank($numeroOperacion)) {
+            return false;
+        }
+
+        return Compra::where('numero_operacion', $numeroOperacion)
+            ->where('estado_pago', '!=', 'rechazado')
+            ->when($exceptoCompraId, fn ($q) => $q->whereKeyNot($exceptoCompraId))
+            ->exists();
     }
 
     public function eliminar(?string $ruta): void

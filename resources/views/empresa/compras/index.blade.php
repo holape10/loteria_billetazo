@@ -15,7 +15,7 @@
                 @endif
 
                 <form action="{{ route('compras.index') }}" method="GET" class="mb-4 flex gap-2">
-                    <input type="text" name="buscar" value="{{ $busqueda }}" placeholder="Buscar por DNI, nombre o celular..."
+                    <input type="text" name="buscar" value="{{ $busqueda }}" placeholder="Buscar por DNI, nombre, celular o N° de operación..."
                            class="w-full max-w-sm border-gray-300 rounded-md text-sm">
                     <button type="submit" class="px-4 py-2 bg-gray-800 text-white rounded text-sm">Buscar</button>
                     @if ($busqueda)
@@ -34,7 +34,7 @@
                                 <th class="py-2 pr-4">Jugadas</th>
                                 <th class="py-2 pr-4">Total</th>
                                 <th class="py-2 pr-4">Método</th>
-                                <th class="py-2 pr-4" hidden="hidden">N° Operación</th>
+                                <th class="py-2 pr-4">N° Operación</th>
                                 <th class="py-2 pr-4">Comprobante</th>
                                 <th class="py-2 pr-4">Estado</th>
                                 <th class="py-2">Acciones</th>
@@ -50,18 +50,25 @@
                                     <td class="py-2 pr-4">{{ $compra->cantidad_jugadas }}</td>
                                     <td class="py-2 pr-4">
                                         S/ {{ number_format($compra->monto_total, 2) }}
-                                        @if ($compra->requiere_revision)
+                                        @if ($compra->requiere_revision && $compra->monto_detectado !== null && abs($compra->monto_detectado - $compra->monto_total) >= 0.01)
                                             <br>
                                             <span class="text-red-400 text-xs font-semibold">
-                                                ⚠️ No coincide con la captura
-                                                @if ($compra->monto_detectado)
-                                                    (detectado: S/ {{ number_format($compra->monto_detectado, 2) }})
-                                                @endif
+                                                ⚠️ No coincide con la captura (detectado: S/ {{ number_format($compra->monto_detectado, 2) }})
                                             </span>
                                         @endif
                                     </td>
                                     <td class="py-2 pr-4">{{ ucfirst($compra->metodo_pago) }}</td>
-                                    <td class="py-2 pr-4" hidden="hidden">{{ $compra->numero_operacion }}</td>
+                                    <td class="py-2 pr-4">
+                                        @if ($compra->numero_operacion)
+                                            <span class="font-mono select-all">{{ $compra->numero_operacion }}</span>
+                                            @if ($operacionesRepetidas->contains($compra->numero_operacion))
+                                                <br>
+                                                <a href="{{ route('compras.index', ['buscar' => $compra->numero_operacion]) }}" class="text-red-400 text-xs font-semibold" title="Este número de operación aparece en más de una compra">🔁 Repetido</a>
+                                            @endif
+                                        @else
+                                            <span class="text-gray-500">—</span>
+                                        @endif
+                                    </td>
                                     <td class="py-2 pr-4">
                                         @if ($compra->comprobante)
                                             <a href="{{ route('compras.comprobante.imagen', $compra) }}" target="_blank" class="text-blue-600">Ver imagen</a>

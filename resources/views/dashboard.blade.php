@@ -17,6 +17,25 @@
             @endif
 
             @if (auth()->user()->rol === 'jugador')
+                @php $sorteoEnVivoAhora = \App\Models\Sorteo::where('estado', 'pendiente')->whereNotNull('numeros_en_vivo')->exists(); @endphp
+                @if ($sorteoEnVivoAhora)
+                    <a href="{{ route('en-vivo') }}" class="flex items-center justify-between gap-3 bg-gradient-to-r from-red-700 to-red-600 text-white sm:rounded-lg p-4 mb-6 border border-red-400 shadow-lg shadow-red-900/40">
+                        <span class="flex items-center gap-3 font-bold text-lg">
+                            <span class="relative flex h-3 w-3">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+                            </span>
+                            ¡El sorteo está EN VIVO!
+                        </span>
+                        <span class="bg-white text-red-700 font-bold rounded px-3 py-1.5 text-sm whitespace-nowrap">Ver ahora →</span>
+                    </a>
+                @else
+                    <a href="{{ route('en-vivo') }}" class="flex items-center justify-between gap-3 bg-gray-900 text-white sm:rounded-lg p-4 mb-6 border border-dorado-700 hover:border-dorado-500">
+                        <span class="font-semibold">📺 Sigue el sorteo en vivo y mira quién va ganando</span>
+                        <span class="text-dorado-400 font-bold text-sm whitespace-nowrap">Ver →</span>
+                    </a>
+                @endif
+
                 <div class="bg-gray-900 text-white shadow-sm sm:rounded-lg p-6 mb-6 border border-dorado-700">
                     <a href="{{ route('boletos.create') }}" class="inline-block px-4 py-2 bg-dorado-500 hover:bg-dorado-600 text-black font-semibold rounded text-lg">🎟️ Jugar ahora</a>
                     @if ($creditosGratis > 0)

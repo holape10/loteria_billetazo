@@ -90,9 +90,13 @@
                                     <td class="py-2">
                                         @if ($sorteo->estado === 'pendiente')
                                             <div class="flex flex-col gap-1">
-                                                <a href="{{ route('sorteos.individual', $sorteo) }}" class="text-black bg-dorado-300 hover:bg-dorado-400 px-3 py-1 rounded text-sm font-semibold text-center">🎱 Inicia Sorteo</a>
+                                                @if ($sorteo->estaEnVivo())
+                                                    <a href="{{ route('sorteos.individual', $sorteo) }}" class="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm font-semibold text-center">🔴 Continuar en vivo ({{ count($sorteo->numeros_en_vivo) }}/6)</a>
+                                                @else
+                                                    <a href="{{ route('sorteos.individual', $sorteo) }}" class="text-black bg-dorado-300 hover:bg-dorado-400 px-3 py-1 rounded text-sm font-semibold text-center">🎱 Inicia Sorteo</a>
+                                                @endif
 
-                                                @if (auth()->user()->esAdministrador())
+                                                @if (auth()->user()->esAdministrador() && ! $sorteo->estaEnVivo())
                                                     <a href="{{ route('sorteos.edit', $sorteo) }}" class="text-black bg-gray-300 hover:bg-gray-400 px-3 py-1 rounded text-sm font-semibold text-center">✏️ Editar</a>
                                                     <form action="{{ route('sorteos.destroy', $sorteo) }}" method="POST" onsubmit="return confirm('¿Eliminar este sorteo? Esta acción no se puede deshacer.')">
                                                         @csrf

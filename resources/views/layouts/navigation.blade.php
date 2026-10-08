@@ -1,3 +1,4 @@
+@php $haySorteoEnVivo = \App\Models\Sorteo::where('estado', 'pendiente')->whereNotNull('numeros_en_vivo')->exists(); @endphp
 <nav x-data="{ open: false }" class="bg-black border-b border-dorado-600">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -16,11 +17,24 @@
                             @endif
                         </a>
                     @endif
+
+                    @if ($haySorteoEnVivo && ! request()->routeIs('en-vivo'))
+                        <a href="{{ route('en-vivo') }}" class="sm:hidden ml-2 inline-flex items-center gap-1 bg-red-600 text-white text-xs font-bold rounded-full px-2 py-1 animate-pulse">
+                            <span class="w-2 h-2 rounded-full bg-white"></span>EN VIVO
+                        </a>
+                    @endif
                 </div>
 
                 <div class="hidden space-x-6 sm:-my-px sm:ml-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
+                    </x-nav-link>
+
+                    <x-nav-link :href="route('en-vivo')" :active="request()->routeIs('en-vivo')">
+                        @if ($haySorteoEnVivo)
+                            <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse mr-1.5"></span>
+                        @endif
+                        {{ __('En vivo') }}
                     </x-nav-link>
 
                     @if (auth()->user()->esSuperAdmin())
@@ -118,6 +132,13 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('en-vivo')" :active="request()->routeIs('en-vivo')">
+                📺 {{ __('Sorteo en vivo') }}
+                @if ($haySorteoEnVivo)
+                    <span class="ml-1 bg-red-600 text-white text-xs font-bold rounded-full px-2">EN VIVO</span>
+                @endif
             </x-responsive-nav-link>
 
             @if (auth()->user()->esSuperAdmin())

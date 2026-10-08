@@ -159,7 +159,7 @@
     </div>
 
     <template id="plantilla-jugada">
-        <div class="jugada-block bg-gradient-to-br from-gray-900 to-gray-800 border-2 border-gray-700 rounded-2xl p-6 mb-6 shadow-xl hover:border-dorado-600 transition-all duration-300 animate-fade-in">
+        <div class="jugada-block bg-gradient-to-br from-gray-900 to-gray-800 border-2 border-gray-700 rounded-2xl p-3 sm:p-6 mb-6 shadow-xl hover:border-dorado-600 transition-all duration-300 animate-fade-in">
             <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
                 <div class="flex items-center gap-3">
                     <div class="bg-gradient-to-r from-dorado-500 to-yellow-500 text-black rounded-full w-10 h-10 flex items-center justify-center font-black text-lg shadow-lg">
@@ -174,10 +174,10 @@
             </div>
             
             <!-- Grid de números mejorado -->
-            <div class="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-2 mb-4 grid-numeros">
+            <div class="grid grid-cols-10 gap-1 sm:gap-2 mb-4 grid-numeros">
                 @for ($n = 1; $n <= 60; $n++)
                     <button type="button" 
-                            class="numero-btn border-2 border-gray-700 bg-gray-800 text-gray-300 rounded-lg py-2.5 text-sm font-bold hover:border-dorado-400 hover:text-dorado-400 hover:scale-110 hover:shadow-lg hover:shadow-dorado-500/30 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-dorado-500" 
+                            class="numero-btn aspect-square sm:aspect-auto flex items-center justify-center border sm:border-2 border-gray-700 bg-gray-800 text-gray-300 rounded-md sm:rounded-lg p-0 sm:py-2.5 text-xs sm:text-sm font-bold hover:border-dorado-400 hover:text-dorado-400 sm:hover:scale-110 hover:shadow-lg hover:shadow-dorado-500/30 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-dorado-500" 
                             data-numero="{{ $n }}">
                         {{ $n }}
                     </button>
