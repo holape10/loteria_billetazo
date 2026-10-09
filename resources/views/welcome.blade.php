@@ -155,6 +155,7 @@
             }
         }
     </style>
+    @include('partials.pwa')
 </head>
 <body class="bg-gray-950 text-white font-sans antialiased">
 
@@ -177,6 +178,13 @@
             </div>
         </div>
     </nav>
+
+    <!-- Instalar app (solo aparece si el navegador lo permite y aún no está instalada) -->
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-3">
+        <x-boton-instalar-app class="w-full sm:w-auto px-5 py-3 text-base shadow-lg shadow-dorado-500/30">
+            Instala la app de El Billetazo
+        </x-boton-instalar-app>
+    </div>
 
     @if ($proximoSorteo)
     <!-- Countdown Section -->
