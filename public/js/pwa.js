@@ -98,8 +98,12 @@
         ]);
     });
 
-    // En iPhone no existe el aviso automático: mostramos el botón para dar las instrucciones
+    // En celulares mostramos el botón aunque el navegador todavía no haya avisado (iPhone nunca avisa,
+    // y algunos navegadores de Android tampoco): si no hay aviso, el botón explica cómo instalarla a mano.
+    // Solo se puede instalar desde https (o localhost), por eso no se muestra en páginas sin candado.
+    var esCelular = esIOS || /android|mobile/i.test(navigator.userAgent);
+
     document.addEventListener('DOMContentLoaded', function () {
-        if (!instalada && esIOS) mostrarBotones(true);
+        if (!instalada && window.isSecureContext && esCelular) mostrarBotones(true);
     });
 })();

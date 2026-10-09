@@ -2,9 +2,9 @@
 // - Las páginas siempre se piden a la red (los datos del jugador deben estar al día y no quedan guardados en el teléfono).
 // - Sin internet se muestra /offline.html.
 // - Imágenes, íconos y archivos de /build se guardan en caché para que la app abra rápido.
-const VERSION = 'billetazo-v1';
+const VERSION = 'billetazo-v2';
 const CACHE_ESTATICO = `${VERSION}-estatico`;
-const PRECARGA = ['/offline.html', '/icons/icon-192.png', '/images/billetazo.png'];
+const PRECARGA = ['/offline.html', '/app-icons/icon-192.png', '/images/billetazo.png'];
 
 self.addEventListener('install', (event) => {
     event.waitUntil(caches.open(CACHE_ESTATICO).then((cache) => cache.addAll(PRECARGA)));
@@ -21,7 +21,7 @@ self.addEventListener('activate', (event) => {
 
 function esEstatico(url) {
     return url.pathname.startsWith('/build/')
-        || url.pathname.startsWith('/icons/')
+        || url.pathname.startsWith('/app-icons/')
         || url.pathname.startsWith('/images/')
         || url.pathname === '/favicon.ico'
         || url.hostname === 'fonts.bunny.net';
