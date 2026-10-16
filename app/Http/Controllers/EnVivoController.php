@@ -15,7 +15,7 @@ class EnVivoController extends Controller
 
     public function estado(SorteoEnVivoService $enVivo)
     {
-        [$sorteo, $estado] = $this->sorteoActual();
+        [$sorteo, $estado] = $this->sorteoActual($enVivo);
 
         if (! $sorteo) {
             return response()->json(['estado' => 'sin_sorteo']);
@@ -34,6 +34,7 @@ class EnVivoController extends Controller
 
         return response()->json(array_merge($publico, [
             'estado' => $estado,
+            'mezclando' => $estado === 'en_vivo' && $enVivo->estaMezclando($sorteo),
             'mis_jugadas' => $this->misJugadas($sorteo, $publico['extraidos'], $enVivo),
         ]));
     }
@@ -41,11 +42,17 @@ class EnVivoController extends Controller
     /**
      * Prioridad: sorteo jugándose ahora → recién terminado (3 h) → próximo programado → último jugado.
      */
-    private function sorteoActual(): array
+    private function sorteoActual(SorteoEnVivoService $servicio): array
     {
         $enVivo = Sorteo::where('estado', 'pendiente')->whereNotNull('numeros_en_vivo')->orderBy('fecha')->first();
         if ($enVivo && $enVivo->estaEnVivo()) {
             return [$enVivo, 'en_vivo'];
+        }
+
+        // Primera bolilla: el admin ya presionó "Sacar número" pero todavía no hay números guardados
+        $proximo = Sorteo::where('estado', 'pendiente')->orderBy('fecha')->orderBy('hora')->first();
+        if ($proximo && $servicio->estaMezclando($proximo)) {
+            return [$proximo, 'en_vivo'];
         }
 
         $recienCerrado = Sorteo::where('estado', 'cerrado')->where('cerrado_en', '>=', now()->subHours(3))
@@ -54,7 +61,6 @@ class EnVivoController extends Controller
             return [$recienCerrado, 'finalizado'];
         }
 
-        $proximo = Sorteo::where('estado', 'pendiente')->orderBy('fecha')->orderBy('hora')->first();
         if ($proximo) {
             return [$proximo, 'esperando'];
         }

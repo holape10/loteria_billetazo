@@ -2,7 +2,7 @@
 // - Las páginas siempre se piden a la red (los datos del jugador deben estar al día y no quedan guardados en el teléfono).
 // - Sin internet se muestra /offline.html.
 // - Imágenes, íconos y archivos de /build se guardan en caché para que la app abra rápido.
-const VERSION = 'billetazo-v2';
+const VERSION = 'billetazo-v3';
 const CACHE_ESTATICO = `${VERSION}-estatico`;
 const PRECARGA = ['/offline.html', '/app-icons/icon-192.png', '/images/billetazo.png'];
 

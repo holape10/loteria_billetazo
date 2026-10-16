@@ -14,6 +14,16 @@
 
             <p class="mb-4 text-sm text-gray-400">📺 Los jugadores están viendo este sorteo en tiempo real desde su cuenta.</p>
 
+            @if ($comprasPendientes > 0)
+                <div class="mb-4 p-3 rounded-lg border border-yellow-500 bg-yellow-900/40 text-yellow-100 text-sm">
+                    ⚠️ Hay <strong>{{ $comprasPendientes }}</strong> compra(s) de este sorteo con el pago sin validar. Sus jugadas
+                    <strong>no participarán</strong> si empiezas ahora.
+                    @if (auth()->user()->esAdministrador())
+                        <a href="{{ route('compras.index') }}" class="underline font-semibold">Revisar compras</a>
+                    @endif
+                </div>
+            @endif
+
             <!-- LAYOUT PRINCIPAL: 2 COLUMNAS -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 
@@ -307,6 +317,8 @@
         let extraidos = @json(array_map('intval', $sorteo->numeros_en_vivo ?? []));
         const maxNumeros = 6;
         const URL_EXTRAER = @json(route('sorteos.extraer', $sorteo));
+        const URL_MEZCLAR = @json(route('sorteos.mezclar', $sorteo));
+        const MS_MEZCLA = {{ \App\Services\SorteoEnVivoService::SEGUNDOS_MEZCLA * 1000 }};
 
         // Crear partículas de explosión
         function crearExplosion() {
@@ -412,8 +424,8 @@
             }
         }
 
-        function pedirNumero() {
-            return fetch(URL_EXTRAER, {
+        function enviar(url) {
+            return fetch(url, {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -442,21 +454,25 @@
             resultado.textContent = '?';
             resultado.classList.remove('reveal', 'pop');
 
-            // Countdown visual
-            let countdown = 3;
-            const countdownInterval = setInterval(() => {
+            // Cuenta regresiva 3, 2, 1 (los jugadores ven la misma animación en su pantalla)
+            let countdown = Math.round(MS_MEZCLA / 1000);
+            const tick = () => {
                 if (countdown > 0) {
                     resultado.textContent = countdown;
                     resultado.classList.add('pop');
                     setTimeout(() => resultado.classList.remove('pop'), 600);
                     countdown--;
                 }
-            }, 500);
+            };
+            tick();
+            const countdownInterval = setInterval(tick, 1000);
 
-            const animacion = new Promise(resolve => setTimeout(resolve, 2500));
-
-            Promise.all([pedirNumero(), animacion])
-                .then(([data]) => {
+            // 1) Avisar que se está mezclando  2) esperar la animación  3) recién ahí el servidor elige el número.
+            // Así el número aparece primero aquí y un instante después en la pantalla de los jugadores.
+            enviar(URL_MEZCLAR)
+                .then(() => new Promise(resolve => setTimeout(resolve, MS_MEZCLA)))
+                .then(() => enviar(URL_EXTRAER))
+                .then((data) => {
                     clearInterval(countdownInterval);
                     mensaje.classList.add('hidden');
                     contenedorBolas.classList.remove('agitando');

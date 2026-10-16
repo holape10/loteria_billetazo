@@ -74,7 +74,13 @@
                                             <a href="{{ route('compras.comprobante.imagen', $compra) }}" target="_blank" class="text-blue-600">Ver imagen</a>
                                         @endif
                                     </td>
-                                    <td class="py-2 pr-4">{{ ucfirst($compra->estado_pago) }}</td>
+                                    <td class="py-2 pr-4">
+                                        {{ ucfirst($compra->estado_pago) }}
+                                        @if ($compra->estado_pago === 'pendiente' && $compra->sorteo->estado === 'cerrado')
+                                            <br>
+                                            <span class="text-yellow-400 text-xs font-semibold" title="El sorteo se jugó sin que este pago estuviera validado, así que sus jugadas no participaron">⚠️ Sorteo ya jugado: no participó</span>
+                                        @endif
+                                    </td>
                                                                         <td class="py-2">
                                         @if ($compra->estado_pago === 'pendiente')
                                             <form action="{{ route('compras.aprobar', $compra) }}" method="POST" class="inline">

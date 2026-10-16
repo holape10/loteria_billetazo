@@ -170,7 +170,21 @@ class SorteoController extends Controller
 
         $enCarrera = $enVivo->enCarrera($sorteo, $sorteo->numeros_en_vivo ?? []);
 
-        return view('empresa.sorteos.individual', compact('sorteo', 'enCarrera'));
+        // Las jugadas con pago sin validar no participan: se avisa antes de empezar
+        $comprasPendientes = $sorteo->compras()->where('estado_pago', 'pendiente')->count();
+
+        return view('empresa.sorteos.individual', compact('sorteo', 'enCarrera', 'comprasPendientes'));
+    }
+
+    public function mezclar(Sorteo $sorteo, SorteoEnVivoService $enVivo)
+    {
+        if ($sorteo->estado !== 'pendiente' || count($sorteo->numeros_en_vivo ?? []) >= SorteoEnVivoService::TOTAL_NUMEROS) {
+            return response()->json(['mensaje' => 'El sorteo ya no admite más extracciones.'], 422);
+        }
+
+        $enVivo->marcarMezclando($sorteo);
+
+        return response()->json(['segundos' => SorteoEnVivoService::SEGUNDOS_MEZCLA]);
     }
 
     public function extraer(Sorteo $sorteo, SorteoEnVivoService $enVivo)

@@ -84,6 +84,7 @@ Route::middleware(['auth', 'sorteos'])->group(function () {
     Route::get('sorteos/{sorteo}/realizar-manual', [SorteoController::class, 'formularioManual'])->name('sorteos.realizar-manual.form');
     Route::post('sorteos/{sorteo}/realizar-manual', [SorteoController::class, 'realizarManual'])->name('sorteos.realizar-manual');
     Route::get('sorteos/{sorteo}/individual', [SorteoController::class, 'individual'])->name('sorteos.individual');
+    Route::post('sorteos/{sorteo}/mezclar', [SorteoController::class, 'mezclar'])->name('sorteos.mezclar');
     Route::post('sorteos/{sorteo}/extraer', [SorteoController::class, 'extraer'])->name('sorteos.extraer');
     Route::post('sorteos/{sorteo}/confirmar-en-vivo', [SorteoController::class, 'confirmarEnVivo'])->name('sorteos.confirmar-en-vivo');
 });
@@ -119,7 +120,7 @@ Route::middleware('auth')->group(function () {
     Route::get('mis-incidencias', [IncidenciaController::class, 'index'])->name('incidencias.index');
 
     Route::get('en-vivo', [EnVivoController::class, 'index'])->name('en-vivo');
-    Route::get('en-vivo/estado', [EnVivoController::class, 'estado'])->middleware('throttle:60,1')->name('en-vivo.estado');
+    Route::get('en-vivo/estado', [EnVivoController::class, 'estado'])->middleware('throttle:120,1')->name('en-vivo.estado');
 
     Route::get('compras/{compra}/comprobante', [ComprobanteController::class, 'ver'])->name('compras.comprobante');
     Route::get('compras/{compra}/comprobante/pdf', [ComprobanteController::class, 'pdf'])->name('compras.comprobante.pdf');

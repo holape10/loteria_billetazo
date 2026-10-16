@@ -100,6 +100,11 @@ class ClienteController extends Controller
 
     public function destroy(Cliente $cliente)
     {
+        // Borrar un cliente borra en cascada sus compras y jugadas (y descuadra los reportes): se desactiva en su lugar
+        if ($cliente->boletos()->exists() || \App\Models\Compra::where('cliente_id', $cliente->id)->exists()) {
+            return back()->with('error', "{$cliente->nombre} tiene compras o jugadas registradas y no se puede eliminar sin perder ese historial. Edítalo y márcalo como Inactivo para bloquear su cuenta.");
+        }
+
         $cliente->delete();
 
         return redirect()->route('clientes.index')->with('exito', 'Cliente eliminado correctamente.');

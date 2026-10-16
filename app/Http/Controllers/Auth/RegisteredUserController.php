@@ -39,6 +39,16 @@ class RegisteredUserController extends Controller
             ]);
         }
 
+        // Si el administrador ya registró ese DNI, solo puede reclamarlo quien tenga el mismo celular:
+        // así nadie se queda con el historial de otra persona sabiendo solo su DNI
+        $soloDigitos = fn ($numero) => substr(preg_replace('/\D/', '', (string) $numero), -9);
+
+        if ($cliente && filled($cliente->celular) && $soloDigitos($cliente->celular) !== $soloDigitos($request->celular)) {
+            throw ValidationException::withMessages([
+                'celular' => 'Este DNI ya está registrado con otro número de celular. Escríbenos por WhatsApp para activar tu cuenta.',
+            ]);
+        }
+
         if ($cliente) {
             $cliente->update([
                 'nombre' => $request->nombre,

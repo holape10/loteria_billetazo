@@ -13,9 +13,31 @@ class SorteoEnVivoService
 {
     public const TOTAL_NUMEROS = 6;
 
+    // Segundos que dura la animación de "mezclando" en la pantalla del admin y de los jugadores
+    public const SEGUNDOS_MEZCLA = 3;
+
+    // El admin presionó "Sacar número": los jugadores ven la animación de suspenso al mismo tiempo.
+    // El número todavía no existe; se elige recién en extraer(), al terminar la animación.
+    public function marcarMezclando(Sorteo $sorteo): void
+    {
+        Cache::put($this->claveMezclando($sorteo), now()->getTimestampMs(), now()->addSeconds(self::SEGUNDOS_MEZCLA + 10));
+    }
+
+    public function estaMezclando(Sorteo $sorteo): bool
+    {
+        return Cache::has($this->claveMezclando($sorteo));
+    }
+
+    private function claveMezclando(Sorteo $sorteo): string
+    {
+        return "sorteo:{$sorteo->id}:mezclando";
+    }
+
     // El servidor elige cada bolilla: así el resultado no depende del navegador y sobrevive a una recarga
     public function extraer(Sorteo $sorteo): ?array
     {
+        Cache::forget($this->claveMezclando($sorteo));
+
         return DB::transaction(function () use ($sorteo) {
             $sorteo = Sorteo::whereKey($sorteo->id)->lockForUpdate()->first();
 

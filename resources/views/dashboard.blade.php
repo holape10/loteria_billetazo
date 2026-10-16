@@ -17,8 +17,7 @@
             @endif
 
             @if (auth()->user()->rol === 'jugador')
-                @php $sorteoEnVivoAhora = \App\Models\Sorteo::where('estado', 'pendiente')->whereNotNull('numeros_en_vivo')->exists(); @endphp
-                @if ($sorteoEnVivoAhora)
+                @if ($haySorteoEnVivo)
                     <a href="{{ route('en-vivo') }}" class="flex items-center justify-between gap-3 bg-gradient-to-r from-red-700 to-red-600 text-white sm:rounded-lg p-4 mb-6 border border-red-400 shadow-lg shadow-red-900/40">
                         <span class="flex items-center gap-3 font-bold text-lg">
                             <span class="relative flex h-3 w-3">

@@ -44,6 +44,11 @@ class Sorteo extends Model
         return $this->hasMany(Boleto::class);
     }
 
+    public function compras()
+    {
+        return $this->hasMany(Compra::class);
+    }
+
         public function fechaHora(): \Carbon\Carbon
     {
         return \Carbon\Carbon::parse($this->fecha->format('Y-m-d') . ' ' . $this->hora);
@@ -71,6 +76,11 @@ class Sorteo extends Model
     {
         if (! empty($this->numeros_en_vivo)) {
             return array_map('intval', $this->numeros_en_vivo);
+        }
+
+        // Un sorteo que no se ha cerrado solo muestra lo que va saliendo en vivo
+        if ($this->estado === 'pendiente') {
+            return [];
         }
 
         return array_values(array_filter([

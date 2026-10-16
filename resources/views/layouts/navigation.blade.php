@@ -1,4 +1,3 @@
-@php $haySorteoEnVivo = \App\Models\Sorteo::where('estado', 'pendiente')->whereNotNull('numeros_en_vivo')->exists(); @endphp
 <nav x-data="{ open: false }" class="bg-black border-b border-dorado-600">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -9,11 +8,10 @@
                     </a>
 
                     @if (auth()->user()->rol === 'jugador')
-                        @php $noLeidasMovil = auth()->user()->cliente?->incidenciasNoLeidas() ?? 0; @endphp
-                        <a href="{{ route('incidencias.index') }}" class="sm:hidden relative inline-flex items-center ml-3 p-1" aria-label="Notificaciones{{ $noLeidasMovil > 0 ? " ($noLeidasMovil sin leer)" : '' }}">
+                        <a href="{{ route('incidencias.index') }}" class="sm:hidden relative inline-flex items-center ml-3 p-1" aria-label="Notificaciones{{ $notificacionesSinLeer > 0 ? " ($notificacionesSinLeer sin leer)" : '' }}">
                             <span class="text-2xl campana-animada">🔔</span>
-                            @if ($noLeidasMovil > 0)
-                                <span class="absolute -top-0.5 -right-1 bg-red-600 text-white text-[10px] font-bold rounded-full min-w-[1rem] h-4 px-1 flex items-center justify-center">{{ $noLeidasMovil }}</span>
+                            @if ($notificacionesSinLeer > 0)
+                                <span class="absolute -top-0.5 -right-1 bg-red-600 text-white text-[10px] font-bold rounded-full min-w-[1rem] h-4 px-1 flex items-center justify-center">{{ $notificacionesSinLeer }}</span>
                             @endif
                         </a>
                     @endif
@@ -77,11 +75,10 @@
                             {{ __('Jugar') }}
                         </x-nav-link>
 
-                        @php $noLeidas = auth()->user()->cliente?->incidenciasNoLeidas() ?? 0; @endphp
                         <a href="{{ route('incidencias.index') }}" class="relative inline-flex items-center px-2">
                             <span class="text-2xl campana-animada">🔔</span>
-                            @if ($noLeidas > 0)
-                                <span class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">{{ $noLeidas }}</span>
+                            @if ($notificacionesSinLeer > 0)
+                                <span class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">{{ $notificacionesSinLeer }}</span>
                             @endif
                         </a>
                     @endif

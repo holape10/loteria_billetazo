@@ -3,7 +3,7 @@
     "short_name": "El Billetazo",
     "description": "Juega, sigue el sorteo en vivo y revisa tus premios de El Billetazo.",
     "id": "/",
-    "start_url": "/dashboard?source=pwa",
+    "start_url": "/?source=pwa",
     "scope": "/",
     "display": "standalone",
     "orientation": "portrait",

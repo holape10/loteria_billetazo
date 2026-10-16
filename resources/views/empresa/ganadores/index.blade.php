@@ -6,8 +6,12 @@
     <title>Ganadores — El Billetazo</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('images/favicon.ico') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @include('partials.pwa')
 </head>
 <body class="bg-gray-950 text-white font-sans antialiased">
+    @inject('enVivo', 'App\Services\SorteoEnVivoService')
+    {{-- Página pública: el nombre completo solo lo ve el administrador --}}
+    @php $verNombreCompleto = auth()->user()?->puedeGestionarSorteos() ?? false; @endphp
 
     <nav class="bg-black border-b border-dorado-600">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -38,7 +42,7 @@
                     @foreach ($ganadores as $g)
                         <div class="bg-gray-900 border border-dorado-700 rounded-xl p-4 flex justify-between items-center">
                             <div>
-                                <p class="font-semibold text-white">{{ $g->cliente->nombre }}</p>
+                                <p class="font-semibold text-white">{{ $verNombreCompleto ? $g->cliente->nombre : $enVivo->abreviarNombre($g->cliente->nombre) }}</p>
                                 <p class="text-sm text-gray-400">{{ $g->aciertos }} aciertos</p>
                             </div>
                             <p class="text-dorado-400 font-extrabold text-lg">

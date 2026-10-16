@@ -91,6 +91,22 @@
             let estadoAnterior = null;
             let temporizador = null;
             let intervaloCuenta = null;
+            let intervaloMezcla = null;
+
+            // Mientras el admin mezcla, la bolilla "gira" mostrando números al azar
+            function animarMezcla(activa) {
+                const ultimo = $('ultimo-numero');
+                if (activa && !intervaloMezcla) {
+                    ultimo.classList.add('animate-pulse');
+                    intervaloMezcla = setInterval(() => {
+                        ultimo.textContent = Math.floor(Math.random() * 60) + 1;
+                    }, 90);
+                } else if (!activa && intervaloMezcla) {
+                    clearInterval(intervaloMezcla);
+                    intervaloMezcla = null;
+                    ultimo.classList.remove('animate-pulse');
+                }
+            }
 
             function mostrarVista(nombre) {
                 ['cargando', 'sin-sorteo', 'esperando', 'sorteo'].forEach(v =>
@@ -296,12 +312,17 @@
 
                 $('sorteo-fecha').textContent = data.sorteo.fecha;
                 $('sorteo-pozo').textContent = data.sorteo.premio_mayor;
-                $('titulo-ultimo').textContent = data.estado === 'finalizado' ? 'Último número del sorteo' : 'Último número extraído';
+                $('titulo-ultimo').textContent = data.mezclando
+                    ? `🎲 Saliendo la bolilla ${extraidos.length + 1}...`
+                    : (data.estado === 'finalizado' ? 'Último número del sorteo' : 'Último número extraído');
                 $('stat-jugadas').textContent = data.total_jugadas;
                 $('stat-carrera').textContent = data.total_en_carrera;
 
                 const ultimo = $('ultimo-numero');
-                ultimo.textContent = extraidos.length ? extraidos[extraidos.length - 1] : '?';
+                animarMezcla(Boolean(data.mezclando));
+                if (!data.mezclando) {
+                    ultimo.textContent = extraidos.length ? extraidos[extraidos.length - 1] : '?';
+                }
                 if (hayNuevo) {
                     ultimo.classList.remove('revelar'); void ultimo.offsetWidth; ultimo.classList.add('revelar');
                     if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
@@ -326,7 +347,10 @@
                     if (res.ok) {
                         const data = await res.json();
                         render(data);
-                        espera = data.estado === 'en_vivo' ? 3000 : (data.estado === 'esperando' ? 10000 : 30000);
+                        // Mientras se mezcla se consulta seguido para mostrar el número apenas sale
+                        espera = data.mezclando ? 700
+                            : data.estado === 'en_vivo' ? 2000
+                            : data.estado === 'esperando' ? 5000 : 30000;
                     }
                 } catch (e) { /* sin conexión: se reintenta */ }
                 if (!document.hidden) temporizador = setTimeout(consultar, espera);
