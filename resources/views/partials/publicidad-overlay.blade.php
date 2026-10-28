@@ -4,7 +4,9 @@
 <div id="publicidad-overlay" class="hidden fixed inset-0 z-[60] bg-black/95 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="publicidad-titulo">
     <div class="w-full max-w-lg text-center text-white">
         <p class="text-dorado-400 text-xs uppercase tracking-[0.3em] font-bold mb-4">Este sorteo llega gracias a</p>
-        <img id="publicidad-imagen" class="hidden mx-auto max-h-[50vh] w-auto rounded-2xl border-2 border-dorado-500 shadow-2xl shadow-dorado-500/20 mb-5" alt="">
+        <div id="publicidad-marco" class="hidden mx-auto w-full max-w-[66vh] aspect-[4/3] rounded-2xl border-2 border-dorado-500 bg-black overflow-hidden shadow-2xl shadow-dorado-500/20 mb-5">
+            <img id="publicidad-imagen" class="w-full h-full" alt="">
+        </div>
         <h3 id="publicidad-titulo" class="text-2xl sm:text-3xl font-black text-dorado-300"></h3>
         <p id="publicidad-texto" class="mt-3 text-gray-200 text-base sm:text-lg whitespace-pre-line"></p>
         <div class="mt-6 h-1.5 bg-gray-800 rounded-full overflow-hidden">
@@ -51,8 +53,9 @@
             $('publicidad-titulo').textContent = a.titulo;
             $('publicidad-texto').textContent = a.texto || '';
             const img = $('publicidad-imagen');
-            if (a.imagen) { img.src = a.imagen; img.alt = a.titulo; img.classList.remove('hidden'); }
-            else { img.classList.add('hidden'); img.removeAttribute('src'); }
+            const marco = $('publicidad-marco');
+            if (a.imagen) { img.src = a.imagen; img.alt = a.titulo; img.style.cssText = a.estilo; marco.classList.remove('hidden'); }
+            else { marco.classList.add('hidden'); img.removeAttribute('src'); }
 
             const ms = a.segundos * 1000;
             animarProgreso(ms);

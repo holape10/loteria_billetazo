@@ -13,9 +13,10 @@
 
                 <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
                     <p class="text-sm text-gray-400 max-w-xl">
-                        Las publicidades <strong class="text-gray-200">activas</strong> se muestran a pantalla completa, en este orden,
-                        cuando los jugadores entran al sorteo en vivo antes de que salga el primer número,
-                        y cada vez que presionas <strong class="text-gray-200">“📢 Pasar publicidad”</strong> en la pantalla del sorteo.
+                        <strong class="text-gray-200">📺 Sorteo en vivo:</strong> a pantalla completa (con voz si la activas) cuando los jugadores entran
+                        y cuando presionas “📢 Pasar publicidad”.
+                        <strong class="text-gray-200">🏠 Página de inicio:</strong> ventana emergente sin sonido y sección “Nuestros auspiciadores”.
+                        Cuándo aparecen se elige en <a href="{{ route('configuracion.edit') }}" class="text-dorado-400 underline">⚙️ Configuración</a>.
                     </p>
                     <a href="{{ route('publicidades.create') }}" class="px-4 py-2 bg-dorado-500 hover:bg-dorado-600 text-black font-semibold rounded">+ Nueva publicidad</a>
                 </div>
@@ -24,7 +25,7 @@
                     @forelse ($publicidades as $p)
                         <div class="flex flex-col sm:flex-row sm:items-center gap-4 p-3 rounded-lg border {{ $p->activo ? 'border-gray-700 bg-gray-800/50' : 'border-gray-800 opacity-60' }}">
                             @if ($p->imagen)
-                                <img src="{{ Storage::disk('public')->url($p->imagen) }}" alt="" class="w-full sm:w-28 h-28 sm:h-20 object-cover rounded">
+                                <img src="{{ $p->urlImagen() }}" alt="" class="w-full sm:w-28 h-28 sm:h-20 rounded bg-black" style="{{ $p->estiloImagen() }}">
                             @else
                                 <div class="w-full sm:w-28 h-20 rounded bg-gray-800 flex items-center justify-center text-3xl">📢</div>
                             @endif
@@ -35,7 +36,8 @@
                                     <p class="text-sm text-gray-300 line-clamp-2">{{ $p->texto }}</p>
                                 @endif
                                 <p class="text-xs text-gray-400 mt-1">
-                                    ⏱️ {{ $p->duracion_segundos }} s
+                                    {{ \App\Models\Publicidad::UBICACIONES[$p->ubicacion] ?? $p->ubicacion }}
+                                    · ⏱️ {{ $p->duracion_segundos }} s
                                     · {{ $p->audio ? '🎵 Audio propio' : ($p->con_voz ? '🗣️ Con voz' : '🔇 Sin voz') }}
                                     · {{ $p->activo ? '✅ Activa' : '⏸️ Inactiva' }}
                                 </p>

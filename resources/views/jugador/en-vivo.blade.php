@@ -333,6 +333,8 @@
 
             // --- Publicidad ---
             let ultimaPublicidad = null;
+            let publicidadEntradaRevisada = false;
+            const MODO_PUBLICIDAD = @json(\App\Models\Configuracion::publicidadEnVivoModo());
 
             function manejarPublicidad(data) {
                 if (!Publicidad.hay || !data.sorteo) return;
@@ -344,14 +346,24 @@
                     return;
                 }
 
-                // Al entrar antes del primer número (una vez por sorteo en esta pestaña)
-                const clave = 'billetazo:publicidad:' + data.sorteo.id;
-                let vista = false;
-                try { vista = sessionStorage.getItem(clave) === '1'; } catch (e) {}
-                if (!vista && (data.estado === 'esperando' || (data.estado === 'en_vivo' && data.extraidos.length === 0))) {
-                    try { sessionStorage.setItem(clave, '1'); } catch (e) {}
-                    Publicidad.mostrar();
+                // Al entrar a la página (solo se revisa con la primera respuesta), según lo elegido en Configuración
+                if (publicidadEntradaRevisada) return;
+                publicidadEntradaRevisada = true;
+
+                if (data.estado === 'finalizado' || MODO_PUBLICIDAD === 'nunca') return;
+
+                const antesDeEmpezar = data.estado === 'esperando' || (data.estado === 'en_vivo' && data.extraidos.length === 0);
+                if (MODO_PUBLICIDAD === 'antes_de_empezar' && !antesDeEmpezar) return;
+
+                if (MODO_PUBLICIDAD === 'una_vez') {
+                    const clave = 'billetazo:publicidad-vista:' + data.sorteo.id;
+                    try {
+                        if (localStorage.getItem(clave) === '1') return;
+                        localStorage.setItem(clave, '1');
+                    } catch (e) {}
                 }
+
+                Publicidad.mostrar();
             }
 
             function render(data) {
@@ -392,6 +404,8 @@
                 if (hayNuevo) {
                     ultimo.classList.remove('revelar'); void ultimo.offsetWidth; ultimo.classList.add('revelar');
                     if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
+                    // Si estaba viendo la publicidad, se cierra para que no se pierda el número
+                    Publicidad.cerrar();
                     Locutor.cantarNumero(extraidos[extraidos.length - 1], extraidos.length);
                 }
 

@@ -13,8 +13,12 @@ class Publicidad extends Model
 
     protected $fillable = [
         'titulo',
+        'ubicacion',
         'texto',
+        'enlace',
         'imagen',
+        'ajuste_imagen',
+        'posicion_imagen',
         'audio',
         'texto_voz',
         'con_voz',
@@ -28,20 +32,51 @@ class Publicidad extends Model
         'activo' => 'boolean',
     ];
 
-    public const CLAVE_CACHE = 'publicidades:sorteo';
+    public const UBICACIONES = [
+        'sorteo' => '📺 Sorteo en vivo',
+        'inicio' => '🏠 Página de inicio',
+        'ambos' => '📺🏠 Ambos',
+    ];
+
+    public const AJUSTES = [
+        'contain' => 'Mostrar la imagen completa',
+        'cover' => 'Llenar el recuadro (recorta los bordes)',
+    ];
+
+    public const POSICIONES = [
+        'center' => 'Centro',
+        'top' => 'Arriba',
+        'bottom' => 'Abajo',
+        'left' => 'Izquierda',
+        'right' => 'Derecha',
+    ];
+
+    private const CACHE_SORTEO = 'publicidades:sorteo';
+    private const CACHE_INICIO = 'publicidades:inicio';
 
     protected static function booted(): void
     {
-        // Cualquier cambio del administrador se refleja enseguida en el sorteo
-        $limpiar = fn () => Cache::forget(self::CLAVE_CACHE);
+        // Cualquier cambio del administrador se refleja enseguida en el sorteo y en la portada
+        $limpiar = function () {
+            Cache::forget(self::CACHE_SORTEO);
+            Cache::forget(self::CACHE_INICIO);
+        };
         static::saved($limpiar);
         static::deleted($limpiar);
     }
 
-    // Publicidades activas listas para la pantalla del sorteo (se guardan 10 minutos en caché)
+    // Publicidades activas para la pantalla del sorteo en vivo (se guardan 10 minutos en caché)
     public static function paraSorteo(): array
     {
-        return Cache::remember(self::CLAVE_CACHE, now()->addMinutes(10), fn () => static::activas()->get()->map->paraPantalla()->values()->all());
+        return Cache::remember(self::CACHE_SORTEO, now()->addMinutes(10), fn () => static::activas()
+            ->whereIn('ubicacion', ['sorteo', 'ambos'])->get()->map->paraPantalla()->values()->all());
+    }
+
+    // Publicidades activas para la ventana y la sección de auspiciadores de la página de inicio
+    public static function paraInicio(): array
+    {
+        return Cache::remember(self::CACHE_INICIO, now()->addMinutes(10), fn () => static::activas()
+            ->whereIn('ubicacion', ['inicio', 'ambos'])->get()->map->paraPantalla()->values()->all());
     }
 
     public function scopeActivas(Builder $query): Builder
@@ -49,13 +84,29 @@ class Publicidad extends Model
         return $query->where('activo', true)->orderBy('orden')->orderBy('id');
     }
 
-    // Datos que necesita la pantalla del sorteo para mostrarla (y leerla en voz alta si corresponde)
+    public function urlImagen(): ?string
+    {
+        return $this->imagen ? Storage::disk('public')->url($this->imagen) : null;
+    }
+
+    // Estilo para "acomodar" la imagen dentro del recuadro (completa o recortada, y desde qué lado)
+    public function estiloImagen(): string
+    {
+        $ajuste = array_key_exists($this->ajuste_imagen, self::AJUSTES) ? $this->ajuste_imagen : 'contain';
+        $posicion = array_key_exists($this->posicion_imagen, self::POSICIONES) ? $this->posicion_imagen : 'center';
+
+        return "object-fit: {$ajuste}; object-position: {$posicion};";
+    }
+
+    // Datos que necesita la pantalla para mostrarla (y leerla en voz alta si corresponde)
     public function paraPantalla(): array
     {
         return [
             'titulo' => $this->titulo,
             'texto' => $this->texto,
-            'imagen' => $this->imagen ? Storage::disk('public')->url($this->imagen) : null,
+            'enlace' => $this->enlace,
+            'imagen' => $this->urlImagen(),
+            'estilo' => $this->estiloImagen(),
             'audio' => $this->audio ? Storage::disk('public')->url($this->audio) : null,
             'voz' => $this->con_voz ? ($this->texto_voz ?: trim($this->titulo . '. ' . $this->texto)) : null,
             'segundos' => $this->duracion_segundos,

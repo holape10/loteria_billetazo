@@ -34,6 +34,29 @@
 
                     <p class="text-xs text-gray-500 mt-3">Regalos entregados a nuevos registros hasta hoy: {{ $regalosEntregados }}</p>
 
+                    <hr class="my-6 border-gray-700">
+
+                    <h3 class="text-lg font-bold text-dorado-300 mb-1">📢 Publicidad</h3>
+                    <p class="text-sm text-gray-400 mb-4">
+                        Las publicidades se crean en el menú <a href="{{ route('publicidades.index') }}" class="text-dorado-400 underline">Publicidad</a>.
+                        Aquí eliges cuándo aparecen.
+                    </p>
+
+                    <label for="publicidad_en_vivo_modo" class="block text-sm font-medium text-gray-300">📺 Al entrar al sorteo en vivo, mostrar la publicidad…</label>
+                    <select id="publicidad_en_vivo_modo" name="publicidad_en_vivo_modo" class="mt-1 block w-full bg-gray-800 border-gray-700 text-white rounded-md focus:border-dorado-500 focus:ring-dorado-500">
+                        @foreach (\App\Models\Configuracion::MODOS_EN_VIVO as $valor => $nombre)
+                            <option value="{{ $valor }}" @selected(old('publicidad_en_vivo_modo', $publicidadEnVivoModo) === $valor)>{{ $nombre }}</option>
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Si sale un número mientras alguien ve la publicidad, se cierra sola para que no se lo pierda.</p>
+
+                    <label for="publicidad_inicio_frecuencia" class="block text-sm font-medium text-gray-300 mt-4">🏠 Ventana de publicidad en la página de inicio</label>
+                    <select id="publicidad_inicio_frecuencia" name="publicidad_inicio_frecuencia" class="mt-1 block w-full bg-gray-800 border-gray-700 text-white rounded-md focus:border-dorado-500 focus:ring-dorado-500">
+                        @foreach (\App\Models\Configuracion::FRECUENCIAS_INICIO as $valor => $nombre)
+                            <option value="{{ $valor }}" @selected(old('publicidad_inicio_frecuencia', $publicidadInicioFrecuencia) === $valor)>{{ $nombre }}</option>
+                        @endforeach
+                    </select>
+
                     <button type="submit" class="mt-6 px-5 py-2 bg-dorado-500 hover:bg-dorado-600 text-black font-semibold rounded">Guardar</button>
                 </form>
             </div>

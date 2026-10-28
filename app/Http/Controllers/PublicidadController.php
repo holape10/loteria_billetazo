@@ -17,7 +17,10 @@ class PublicidadController extends Controller
 
     public function create()
     {
-        return view('empresa.publicidades.form', ['publicidad' => new Publicidad(['activo' => true, 'duracion_segundos' => 10])]);
+        return view('empresa.publicidades.form', ['publicidad' => new Publicidad([
+            'activo' => true, 'duracion_segundos' => 10, 'ubicacion' => request('ubicacion', 'sorteo'),
+            'ajuste_imagen' => 'contain', 'posicion_imagen' => 'center',
+        ])]);
     }
 
     public function store(Request $request)
@@ -57,8 +60,18 @@ class PublicidadController extends Controller
 
     private function guardar(Request $request, Publicidad $publicidad): void
     {
+        // Si escriben "tushpa.app" sin https://, se completa para que el enlace funcione
+        $enlace = trim((string) $request->input('enlace'));
+        if ($enlace !== '' && ! preg_match('#^https?://#i', $enlace)) {
+            $request->merge(['enlace' => 'https://' . $enlace]);
+        }
+
         $datos = $request->validate([
             'titulo' => 'required|string|max:150',
+            'ubicacion' => 'required|in:' . implode(',', array_keys(Publicidad::UBICACIONES)),
+            'enlace' => 'nullable|url:http,https|max:255',
+            'ajuste_imagen' => 'required|in:' . implode(',', array_keys(Publicidad::AJUSTES)),
+            'posicion_imagen' => 'required|in:' . implode(',', array_keys(Publicidad::POSICIONES)),
             'texto' => 'nullable|string|max:1000',
             'texto_voz' => 'nullable|string|max:1000',
             'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3072',
@@ -71,6 +84,7 @@ class PublicidadController extends Controller
             'imagen.max' => 'La imagen no puede pesar más de 3 MB.',
             'audio.max' => 'El audio no puede pesar más de 5 MB.',
             'audio.mimes' => 'El audio debe ser MP3, M4A, OGG o WAV.',
+            'enlace.url' => 'El enlace no es una dirección web válida (ejemplo: https://tushpa.app o https://wa.me/51999999999).',
         ]);
 
         $disco = Storage::disk('public');
@@ -90,6 +104,10 @@ class PublicidadController extends Controller
 
         $publicidad->fill([
             'titulo' => $datos['titulo'],
+            'ubicacion' => $datos['ubicacion'],
+            'enlace' => $datos['enlace'] ?? null,
+            'ajuste_imagen' => $datos['ajuste_imagen'],
+            'posicion_imagen' => $datos['posicion_imagen'],
             'texto' => $datos['texto'] ?? null,
             'texto_voz' => $datos['texto_voz'] ?? null,
             'duracion_segundos' => $datos['duracion_segundos'],

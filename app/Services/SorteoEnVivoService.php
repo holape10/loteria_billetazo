@@ -36,7 +36,7 @@ class SorteoEnVivoService
     // El admin pasa la publicidad: cada jugador conectado la ve una vez (se identifica con la hora en que se lanzó)
     public function lanzarPublicidad(Sorteo $sorteo): void
     {
-        $segundos = (int) \App\Models\Publicidad::activas()->sum('duracion_segundos') + 15;
+        $segundos = (int) collect(\App\Models\Publicidad::paraSorteo())->sum('segundos') + 15;
 
         Cache::put("sorteo:{$sorteo->id}:publicidad", now()->getTimestampMs(), now()->addSeconds($segundos));
     }

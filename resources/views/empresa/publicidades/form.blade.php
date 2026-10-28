@@ -25,6 +25,19 @@
                     @if ($publicidad->exists) @method('PUT') @endif
 
                     <div>
+                        <p class="{{ $etiqueta }}">¿Dónde se muestra? <span class="text-dorado-500">*</span></p>
+                        <div class="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            @foreach (\App\Models\Publicidad::UBICACIONES as $valor => $nombre)
+                                <label class="flex items-center gap-2 p-3 rounded-lg border border-gray-700 bg-gray-800/50 cursor-pointer has-[:checked]:border-dorado-500 has-[:checked]:bg-gray-800">
+                                    <input type="radio" name="ubicacion" value="{{ $valor }}" @checked(old('ubicacion', $publicidad->ubicacion ?? 'sorteo') === $valor) class="text-dorado-500 bg-gray-800 border-gray-600">
+                                    <span class="text-sm">{{ $nombre }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">En la página de inicio sale como ventana emergente (sin sonido) y en la sección “Nuestros auspiciadores”.</p>
+                    </div>
+
+                    <div>
                         <label class="{{ $etiqueta }}" for="titulo">Título <span class="text-dorado-500">*</span></label>
                         <input id="titulo" type="text" name="titulo" value="{{ old('titulo', $publicidad->titulo) }}" required maxlength="150" class="{{ $campo }}" placeholder="tushpa.app">
                     </div>
@@ -32,6 +45,12 @@
                     <div>
                         <label class="{{ $etiqueta }}" for="texto">Texto</label>
                         <textarea id="texto" name="texto" rows="3" maxlength="1000" class="{{ $campo }}" placeholder="Sistema de facturación electrónica. ¡Factura fácil desde tu celular!">{{ old('texto', $publicidad->texto) }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="{{ $etiqueta }}" for="enlace">Enlace del auspiciador <span class="text-gray-500">(opcional: su web, Facebook o WhatsApp)</span></label>
+                        <input id="enlace" type="text" name="enlace" value="{{ old('enlace', $publicidad->enlace) }}" maxlength="255" class="{{ $campo }}" placeholder="https://tushpa.app">
+                        <p class="text-xs text-gray-500 mt-1">Si lo pones, en la página de inicio aparece el botón “Visitar” y su logo se puede tocar.</p>
                     </div>
 
                     <div>
@@ -45,6 +64,35 @@
                         <input id="imagen" type="file" name="imagen" accept="image/jpeg,image/png,image/webp" class="mt-2 block w-full text-sm text-gray-300 file:mr-3 file:py-2 file:px-4 file:rounded file:border-0 file:bg-dorado-500 file:text-black file:font-semibold">
                     </div>
 
+                    {{-- Acomodar la imagen, con vista previa de cómo se verá --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                        <div class="space-y-3">
+                            <div>
+                                <label class="{{ $etiqueta }}" for="ajuste_imagen">Cómo acomodar la imagen</label>
+                                <select id="ajuste_imagen" name="ajuste_imagen" class="{{ $campo }}">
+                                    @foreach (\App\Models\Publicidad::AJUSTES as $valor => $nombre)
+                                        <option value="{{ $valor }}" @selected(old('ajuste_imagen', $publicidad->ajuste_imagen ?? 'contain') === $valor)>{{ $nombre }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="{{ $etiqueta }}" for="posicion_imagen">Si se recorta, mostrar la parte de</label>
+                                <select id="posicion_imagen" name="posicion_imagen" class="{{ $campo }}">
+                                    @foreach (\App\Models\Publicidad::POSICIONES as $valor => $nombre)
+                                        <option value="{{ $valor }}" @selected(old('posicion_imagen', $publicidad->posicion_imagen ?? 'center') === $valor)>{{ $nombre }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="{{ $etiqueta }} mb-1">Vista previa</p>
+                            <div class="rounded-xl border-2 border-dorado-500 bg-black overflow-hidden aspect-[4/3] flex items-center justify-center">
+                                <img id="vista-previa" src="{{ $publicidad->urlImagen() }}" alt="" class="w-full h-full {{ $publicidad->imagen ? '' : 'hidden' }}" style="{{ $publicidad->estiloImagen() }}">
+                                <span id="sin-imagen" class="text-gray-500 text-sm {{ $publicidad->imagen ? 'hidden' : '' }}">Elige una imagen para verla aquí</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="{{ $etiqueta }}" for="duracion_segundos">Segundos en pantalla</label>
@@ -56,8 +104,8 @@
                         </div>
                     </div>
 
-                    <fieldset class="border border-gray-700 rounded-lg p-4 space-y-4">
-                        <legend class="px-2 text-sm font-semibold text-dorado-400">🗣️ Voz</legend>
+                    <fieldset id="bloque-sorteo" class="border border-gray-700 rounded-lg p-4 space-y-4">
+                        <legend class="px-2 text-sm font-semibold text-dorado-400">🗣️ Voz (solo en el sorteo en vivo)</legend>
 
                         <label class="flex items-center gap-2 text-sm">
                             <input type="checkbox" name="con_voz" value="1" id="con_voz" @checked(old('con_voz', $publicidad->con_voz)) class="rounded bg-gray-800 border-gray-600 text-dorado-500">
@@ -99,6 +147,30 @@
 
     <script src="{{ asset('js/locutor.js') }}"></script>
     <script>
+        // Vista previa de la imagen y de cómo se acomoda
+        const vista = document.getElementById('vista-previa');
+        const pintarVista = () => {
+            vista.style.objectFit = document.getElementById('ajuste_imagen').value;
+            vista.style.objectPosition = document.getElementById('posicion_imagen').value;
+        };
+        document.getElementById('ajuste_imagen').addEventListener('change', pintarVista);
+        document.getElementById('posicion_imagen').addEventListener('change', pintarVista);
+        document.getElementById('imagen').addEventListener('change', function () {
+            if (!this.files[0]) return;
+            vista.src = URL.createObjectURL(this.files[0]);
+            vista.classList.remove('hidden');
+            document.getElementById('sin-imagen').classList.add('hidden');
+            pintarVista();
+        });
+
+        // La voz y el audio solo se usan en el sorteo en vivo
+        const pintarUbicacion = () => {
+            const marcada = document.querySelector('input[name=ubicacion]:checked');
+            document.getElementById('bloque-sorteo').classList.toggle('hidden', marcada && marcada.value === 'inicio');
+        };
+        document.querySelectorAll('input[name=ubicacion]').forEach(r => r.addEventListener('change', pintarUbicacion));
+        pintarUbicacion();
+
         document.getElementById('probar-voz').addEventListener('click', () => {
             const texto = document.getElementById('texto_voz').value.trim()
                 || [document.getElementById('titulo').value, document.getElementById('texto').value].filter(Boolean).join('. ');

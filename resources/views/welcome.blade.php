@@ -499,6 +499,8 @@
         </div>
     </section>
 
+    @include('partials.publicidad-inicio')
+
     <!-- Footer -->
     <footer class="bg-black border-t border-dorado-700 py-8 text-center text-gray-500 text-sm">
         <p>&copy; {{ date('Y') }} Gana con El Billetazo. Todos los derechos reservados.</p>
