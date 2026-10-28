@@ -176,6 +176,17 @@ class SorteoController extends Controller
         return view('empresa.sorteos.individual', compact('sorteo', 'enCarrera', 'comprasPendientes'));
     }
 
+    public function publicidad(Sorteo $sorteo, SorteoEnVivoService $enVivo)
+    {
+        if ($sorteo->estado !== 'pendiente') {
+            return response()->json(['mensaje' => 'Este sorteo ya fue jugado.'], 422);
+        }
+
+        $enVivo->lanzarPublicidad($sorteo);
+
+        return response()->json(['ok' => true]);
+    }
+
     public function mezclar(Sorteo $sorteo, SorteoEnVivoService $enVivo)
     {
         if ($sorteo->estado !== 'pendiente' || count($sorteo->numeros_en_vivo ?? []) >= SorteoEnVivoService::TOTAL_NUMEROS) {

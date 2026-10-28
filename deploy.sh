@@ -32,6 +32,9 @@ echo "==> Compilando estilos y scripts"
 npm run build
 rm -f public/hot
 
+echo "==> Enlace de archivos públicos (imágenes de publicidad)"
+[ -e public/storage ] || php artisan storage:link
+
 echo "==> Base de datos"
 php artisan migrate --force
 

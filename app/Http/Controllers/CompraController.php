@@ -3,16 +3,46 @@
 namespace App\Http\Controllers;
 
 use App\Models\Compra;
+use App\Models\Sorteo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class CompraController extends Controller
 {
+    public const POR_PAGINA = 100;
+
+    // Compras del sorteo que todavía no se juega: la lista "limpia" para validar pagos nuevos
     public function index(Request $request)
     {
-        $busqueda = $request->input('buscar');
+        return $this->listar($request, false);
+    }
 
-        $compras = Compra::with(['cliente', 'sorteo'])
+    // Compras de los sorteos ya jugados
+    public function historial(Request $request)
+    {
+        return $this->listar($request, true);
+    }
+
+    private function listar(Request $request, bool $historial)
+    {
+        $busqueda = $request->input('buscar');
+        $estado = $request->input('estado');
+        $sorteoId = $historial ? $request->integer('sorteo') ?: null : null;
+
+        $sorteosJugados = $historial
+            ? Sorteo::where('estado', 'cerrado')->orderByDesc('fecha')->orderByDesc('hora')->get(['id', 'fecha', 'hora'])
+            : collect();
+
+        $base = Compra::query()
+            ->whereHas('sorteo', fn ($q) => $q->where('estado', $historial ? 'cerrado' : 'pendiente'))
+            ->when($sorteoId, fn ($q) => $q->where('sorteo_id', $sorteoId));
+
+        // Resumen por estado de pago (antes de filtrar por estado o búsqueda)
+        $resumen = (clone $base)->selectRaw('estado_pago, COUNT(*) as total, SUM(monto_total) as monto')
+            ->groupBy('estado_pago')->get()->keyBy('estado_pago');
+
+        $compras = $base->with(['cliente:id,nombre,dni,celular', 'sorteo:id,fecha,hora,estado'])
+            ->when(in_array($estado, ['pendiente', 'pagado', 'rechazado'], true), fn ($q) => $q->where('estado_pago', $estado))
             ->when($busqueda, function ($query, $busqueda) {
                 $query->where(function ($q) use ($busqueda) {
                     $q->where('numero_operacion', 'like', "%{$busqueda}%")
@@ -24,7 +54,7 @@ class CompraController extends Controller
                 });
             })
             ->latest()
-            ->paginate(15)
+            ->paginate(self::POR_PAGINA)
             ->withQueryString();
 
         // Números de operación que aparecen en más de una compra (posible voucher reutilizado)
@@ -34,7 +64,9 @@ class CompraController extends Controller
             ->havingRaw('COUNT(*) > 1')
             ->pluck('numero_operacion');
 
-        return view('empresa.compras.index', compact('compras', 'busqueda', 'operacionesRepetidas'));
+        return view('empresa.compras.index', compact(
+            'compras', 'busqueda', 'estado', 'operacionesRepetidas', 'historial', 'sorteosJugados', 'sorteoId', 'resumen'
+        ));
     }
 
     public function aprobar(Compra $compra)

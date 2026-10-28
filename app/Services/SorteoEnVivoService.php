@@ -33,6 +33,19 @@ class SorteoEnVivoService
         return "sorteo:{$sorteo->id}:mezclando";
     }
 
+    // El admin pasa la publicidad: cada jugador conectado la ve una vez (se identifica con la hora en que se lanzó)
+    public function lanzarPublicidad(Sorteo $sorteo): void
+    {
+        $segundos = (int) \App\Models\Publicidad::activas()->sum('duracion_segundos') + 15;
+
+        Cache::put("sorteo:{$sorteo->id}:publicidad", now()->getTimestampMs(), now()->addSeconds($segundos));
+    }
+
+    public function publicidadEnCurso(Sorteo $sorteo): ?int
+    {
+        return Cache::get("sorteo:{$sorteo->id}:publicidad");
+    }
+
     // El servidor elige cada bolilla: así el resultado no depende del navegador y sobrevive a una recarga
     public function extraer(Sorteo $sorteo): ?array
     {

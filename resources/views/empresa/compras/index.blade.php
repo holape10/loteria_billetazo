@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-dorado-400 leading-tight">Compras / Pagos</h2>
+        <h2 class="font-semibold text-xl text-dorado-400 leading-tight">{{ $historial ? 'Historial de compras' : 'Compras / Pagos' }}</h2>
     </x-slot>
 
     <div class="py-6">
@@ -14,14 +14,50 @@
                     <div class="mb-4 p-3 bg-red-100 text-red-700 rounded">{{ session('error') }}</div>
                 @endif
 
-                <form action="{{ route('compras.index') }}" method="GET" class="mb-4 flex gap-2">
+                @php $ruta = $historial ? 'compras.historial' : 'compras.index'; @endphp
+
+                {{-- Pestañas: el sorteo actual queda limpio; lo de sorteos ya jugados va al historial --}}
+                <div class="flex gap-2 mb-4 border-b border-gray-700">
+                    <a href="{{ route('compras.index') }}" class="px-4 py-2 -mb-px border-b-2 font-semibold text-sm {{ $historial ? 'border-transparent text-gray-400 hover:text-white' : 'border-dorado-500 text-dorado-400' }}">🎟️ Sorteo actual</a>
+                    <a href="{{ route('compras.historial') }}" class="px-4 py-2 -mb-px border-b-2 font-semibold text-sm {{ $historial ? 'border-dorado-500 text-dorado-400' : 'border-transparent text-gray-400 hover:text-white' }}">🗂️ Historial (sorteos jugados)</a>
+                </div>
+
+                {{-- Resumen --}}
+                <div class="grid grid-cols-3 gap-3 mb-4 text-center">
+                    @foreach (['pendiente' => ['⏳ Pendientes', 'text-yellow-400'], 'pagado' => ['✅ Pagadas', 'text-green-400'], 'rechazado' => ['❌ Rechazadas', 'text-red-400']] as $clave => [$titulo, $color])
+                        <a href="{{ route($ruta, array_filter(['estado' => $estado === $clave ? null : $clave, 'sorteo' => $sorteoId, 'buscar' => $busqueda])) }}"
+                           class="rounded-lg p-3 border {{ $estado === $clave ? 'border-dorado-500 bg-gray-800' : 'border-gray-700 bg-gray-800/40 hover:bg-gray-800' }}">
+                            <p class="text-xs text-gray-400">{{ $titulo }}</p>
+                            <p class="text-xl font-black {{ $color }}">{{ $resumen[$clave]->total ?? 0 }}</p>
+                            <p class="text-xs text-gray-400">S/ {{ number_format($resumen[$clave]->monto ?? 0, 2) }}</p>
+                        </a>
+                    @endforeach
+                </div>
+
+                <form action="{{ route($ruta) }}" method="GET" class="mb-4 flex flex-wrap gap-2">
+                    @if ($historial)
+                        <select name="sorteo" class="border-gray-300 rounded-md text-sm text-gray-900" onchange="this.form.submit()">
+                            <option value="">Todos los sorteos jugados</option>
+                            @foreach ($sorteosJugados as $s)
+                                <option value="{{ $s->id }}" @selected($sorteoId === $s->id)>Sorteo del {{ $s->fecha->format('d/m/Y') }} · {{ substr($s->hora, 0, 5) }}</option>
+                            @endforeach
+                        </select>
+                    @endif
+                    @if ($estado)
+                        <input type="hidden" name="estado" value="{{ $estado }}">
+                    @endif
                     <input type="text" name="buscar" value="{{ $busqueda }}" placeholder="Buscar por DNI, nombre, celular o N° de operación..."
-                           class="w-full max-w-sm border-gray-300 rounded-md text-sm">
+                           class="w-full max-w-sm border-gray-300 rounded-md text-sm text-gray-900">
                     <button type="submit" class="px-4 py-2 bg-gray-800 text-white rounded text-sm">Buscar</button>
-                    @if ($busqueda)
-                        <a href="{{ route('compras.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded text-sm">Limpiar</a>
+                    @if ($busqueda || $estado || $sorteoId)
+                        <a href="{{ route($ruta) }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded text-sm">Limpiar</a>
                     @endif
                 </form>
+
+                <p class="text-xs text-gray-400 mb-2">
+                    {{ $compras->total() }} compra(s){{ $historial ? '' : ' del sorteo que aún no se juega' }}
+                    @if ($compras->hasPages()) · página {{ $compras->currentPage() }} de {{ $compras->lastPage() }} @endif
+                </p>
 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-sm whitespace-nowrap">
@@ -98,7 +134,7 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="11" class="py-4 text-center text-gray-500">No se encontraron compras.</td></tr>
+                                <tr><td colspan="11" class="py-4 text-center text-gray-500">{{ $historial ? 'No se encontraron compras.' : 'Todavía no hay compras para el sorteo actual.' }}</td></tr>
                             @endforelse
                         </tbody>
                     </table>

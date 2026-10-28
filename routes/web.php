@@ -13,6 +13,7 @@ use App\Http\Controllers\ComprobanteController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\IncidenciaController;
 use App\Http\Controllers\EnVivoController;
+use App\Http\Controllers\PublicidadController;
 
 /*
 |--------------------------------------------------------------------------
@@ -63,9 +64,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::delete('sorteos/{sorteo}', [SorteoController::class, 'destroy'])->name('sorteos.destroy');
 
     Route::get('compras', [CompraController::class, 'index'])->name('compras.index');
+    Route::get('compras/historial', [CompraController::class, 'historial'])->name('compras.historial');
     Route::post('compras/{compra}/aprobar', [CompraController::class, 'aprobar'])->name('compras.aprobar');
     Route::post('compras/{compra}/rechazar', [CompraController::class, 'rechazar'])->name('compras.rechazar');
     Route::post('compras/{compra}/incidencia', [IncidenciaController::class, 'store'])->name('incidencias.store');
+
+    Route::resource('publicidades', PublicidadController::class)->except('show')->parameters(['publicidades' => 'publicidad']);
+    Route::post('publicidades/{publicidad}/alternar', [PublicidadController::class, 'alternar'])->name('publicidades.alternar');
 
     Route::get('reportes/clientes-frecuentes', [ReporteController::class, 'clientesFrecuentes'])->name('reportes.clientes-frecuentes');
     Route::get('reportes/numeros-frecuentes', [ReporteController::class, 'numerosFrecuentes'])->name('reportes.numeros-frecuentes');
@@ -84,6 +89,7 @@ Route::middleware(['auth', 'sorteos'])->group(function () {
     Route::get('sorteos/{sorteo}/realizar-manual', [SorteoController::class, 'formularioManual'])->name('sorteos.realizar-manual.form');
     Route::post('sorteos/{sorteo}/realizar-manual', [SorteoController::class, 'realizarManual'])->name('sorteos.realizar-manual');
     Route::get('sorteos/{sorteo}/individual', [SorteoController::class, 'individual'])->name('sorteos.individual');
+    Route::post('sorteos/{sorteo}/publicidad', [SorteoController::class, 'publicidad'])->name('sorteos.publicidad');
     Route::post('sorteos/{sorteo}/mezclar', [SorteoController::class, 'mezclar'])->name('sorteos.mezclar');
     Route::post('sorteos/{sorteo}/extraer', [SorteoController::class, 'extraer'])->name('sorteos.extraer');
     Route::post('sorteos/{sorteo}/confirmar-en-vivo', [SorteoController::class, 'confirmarEnVivo'])->name('sorteos.confirmar-en-vivo');

@@ -35,6 +35,7 @@ class EnVivoController extends Controller
         return response()->json(array_merge($publico, [
             'estado' => $estado,
             'mezclando' => $estado === 'en_vivo' && $enVivo->estaMezclando($sorteo),
+            'publicidad' => $estado !== 'finalizado' ? $enVivo->publicidadEnCurso($sorteo) : null,
             'mis_jugadas' => $this->misJugadas($sorteo, $publico['extraidos'], $enVivo),
         ]));
     }

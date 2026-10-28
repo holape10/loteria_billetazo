@@ -2,12 +2,20 @@
     <x-slot name="header">
         <div class="flex items-center justify-between gap-3 flex-wrap">
             <h2 class="font-semibold text-xl text-dorado-400 leading-tight">📺 Sorteo en vivo</h2>
-            <span id="pill-estado" class="hidden items-center gap-2 px-3 py-1 rounded-full text-sm font-bold"></span>
+            <div class="flex items-center gap-2">
+                <button type="button" id="btn-voz" class="px-3 py-1 rounded-full text-sm font-bold border border-dorado-600 text-dorado-300 hover:bg-gray-800">🔊 Voz</button>
+                <span id="pill-estado" class="hidden items-center gap-2 px-3 py-1 rounded-full text-sm font-bold"></span>
+            </div>
         </div>
     </x-slot>
 
     <div class="py-6">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+
+            <!-- Los celulares solo dejan hablar a la página después de que la persona la toca una vez -->
+            <button type="button" id="aviso-sonido" class="hidden w-full p-3 rounded-xl bg-dorado-500 hover:bg-dorado-600 text-black font-bold">
+                🔊 Toca aquí para escuchar el sorteo con voz
+            </button>
 
             <!-- Cargando -->
             <div id="vista-cargando" class="text-center text-gray-400 py-16">Conectando con el sorteo...</div>
@@ -70,6 +78,9 @@
     </div>
 
     <canvas id="confetti-en-vivo" class="fixed inset-0 pointer-events-none z-50 hidden"></canvas>
+
+    <script src="{{ asset('js/locutor.js') }}"></script>
+    @include('partials.publicidad-overlay')
 
     <style>
         @keyframes revelar-numero {
@@ -289,8 +300,63 @@
                 })();
             }
 
+            // --- Voz ---
+            let sonidoDesbloqueado = false;
+
+            function pintarVoz() {
+                const activo = Locutor.activo();
+                $('btn-voz').textContent = activo ? '🔊 Voz' : '🔇 Voz';
+                $('aviso-sonido').classList.toggle('hidden', !Locutor.disponible || !activo || sonidoDesbloqueado);
+            }
+
+            function desbloquearSonido() {
+                if (sonidoDesbloqueado) return;
+                sonidoDesbloqueado = true;
+                Locutor.desbloquear();
+                pintarVoz();
+            }
+
+            $('btn-voz').addEventListener('click', (e) => {
+                e.stopPropagation();
+                Locutor.activar(!Locutor.activo());
+                sonidoDesbloqueado = true;
+                pintarVoz();
+                if (Locutor.activo()) Locutor.hablar('Voz activada', { forzar: true });
+            });
+            $('aviso-sonido').addEventListener('click', () => {
+                desbloquearSonido();
+                Locutor.hablar('Listo. Te cantaremos cada número.');
+            });
+            document.addEventListener('pointerdown', desbloquearSonido, { once: true });
+            if (!Locutor.disponible) $('btn-voz').classList.add('hidden');
+            pintarVoz();
+
+            // --- Publicidad ---
+            let ultimaPublicidad = null;
+
+            function manejarPublicidad(data) {
+                if (!Publicidad.hay || !data.sorteo) return;
+
+                // El admin la lanzó para todos
+                if (data.publicidad && data.publicidad !== ultimaPublicidad) {
+                    ultimaPublicidad = data.publicidad;
+                    Publicidad.mostrar();
+                    return;
+                }
+
+                // Al entrar antes del primer número (una vez por sorteo en esta pestaña)
+                const clave = 'billetazo:publicidad:' + data.sorteo.id;
+                let vista = false;
+                try { vista = sessionStorage.getItem(clave) === '1'; } catch (e) {}
+                if (!vista && (data.estado === 'esperando' || (data.estado === 'en_vivo' && data.extraidos.length === 0))) {
+                    try { sessionStorage.setItem(clave, '1'); } catch (e) {}
+                    Publicidad.mostrar();
+                }
+            }
+
             function render(data) {
                 pintarPill(data.estado);
+                manejarPublicidad(data);
 
                 if (data.estado === 'sin_sorteo') { mostrarVista('sin-sorteo'); return; }
 
@@ -326,6 +392,7 @@
                 if (hayNuevo) {
                     ultimo.classList.remove('revelar'); void ultimo.offsetWidth; ultimo.classList.add('revelar');
                     if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
+                    Locutor.cantarNumero(extraidos[extraidos.length - 1], extraidos.length);
                 }
 
                 pintarCasillas(extraidos, hayNuevo);

@@ -52,7 +52,7 @@ class ClienteController extends Controller
 
     public function index()
     {
-        $clientes = Cliente::with('usuario:id,cliente_id')->latest()->paginate(10);
+        $clientes = Cliente::with('usuario:id,cliente_id')->latest()->paginate(50);
 
         return view('empresa.clientes.index', compact('clientes'));
     }

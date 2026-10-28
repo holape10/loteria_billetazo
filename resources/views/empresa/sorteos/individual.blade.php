@@ -89,6 +89,12 @@
                         </span>
                     </button>
 
+                    <!-- VOZ Y PUBLICIDAD -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <button type="button" id="btn-voz" onclick="alternarVoz()" class="px-4 py-3 rounded-xl border-2 border-dorado-600 bg-gray-900 text-dorado-300 font-bold text-sm hover:bg-gray-800">🔊 Voz activada</button>
+                        <button type="button" id="btn-publicidad" onclick="pasarPublicidad()" class="px-4 py-3 rounded-xl border-2 border-dorado-600 bg-gray-900 text-dorado-300 font-bold text-sm hover:bg-gray-800 disabled:opacity-50">📢 Pasar publicidad</button>
+                    </div>
+
                     <!-- BOTÓN CONFIRMAR -->
                     <form action="{{ route('sorteos.confirmar-en-vivo', $sorteo) }}" method="POST" id="form-confirmar" onsubmit="return confirmarSorteo()">
                         @csrf
@@ -136,6 +142,9 @@
 
     <!-- CONFETTI CANVAS -->
     <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-50 hidden"></canvas>
+
+    <script src="{{ asset('js/locutor.js') }}"></script>
+    @include('partials.publicidad-overlay')
 
     <style>
         /* Animación de flotación para las bolas */
@@ -318,6 +327,7 @@
         const maxNumeros = 6;
         const URL_EXTRAER = @json(route('sorteos.extraer', $sorteo));
         const URL_MEZCLAR = @json(route('sorteos.mezclar', $sorteo));
+        const URL_PUBLICIDAD = @json(route('sorteos.publicidad', $sorteo));
         const MS_MEZCLA = {{ \App\Services\SorteoEnVivoService::SEGUNDOS_MEZCLA * 1000 }};
 
         // Crear partículas de explosión
@@ -483,6 +493,7 @@
 
                     setTimeout(() => {
                         resultado.textContent = numeroElegido;
+                        Locutor.cantarNumero(numeroElegido, extraidos.length);
                         resultado.classList.add('reveal');
 
                         const glow = document.getElementById('numero-glow');
@@ -583,6 +594,36 @@
             }
 
             contenedor.classList.remove('hidden');
+        }
+
+        function pintarBotonVoz() {
+            document.getElementById('btn-voz').textContent = Locutor.activo() ? '🔊 Voz activada' : '🔇 Voz apagada';
+        }
+
+        function alternarVoz() {
+            Locutor.activar(!Locutor.activo());
+            pintarBotonVoz();
+            if (Locutor.activo()) Locutor.hablar('Voz activada', { forzar: true });
+        }
+
+        // Muestra la publicidad aquí y en la pantalla de todos los jugadores conectados
+        function pasarPublicidad() {
+            if (!Publicidad.hay) {
+                alert('No hay publicidades activas. Créalas en el menú Publicidad.');
+                return;
+            }
+            const btn = document.getElementById('btn-publicidad');
+            btn.disabled = true;
+            enviar(URL_PUBLICIDAD).catch(() => {});
+            Publicidad.mostrar().finally(() => { btn.disabled = false; });
+        }
+
+        pintarBotonVoz();
+        if (!Publicidad.hay) document.getElementById('btn-publicidad').classList.add('hidden');
+
+        // Al entrar, antes del primer número, se muestra la publicidad (solo en esta pantalla)
+        if (extraidos.length === 0) {
+            Publicidad.mostrar();
         }
 
         // Retomar un sorteo en vivo que ya tenía números (por ejemplo, tras recargar la página)

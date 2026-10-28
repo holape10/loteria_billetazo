@@ -51,17 +51,27 @@
                         <x-nav-link :href="route('compras.index')" :active="request()->routeIs('compras.*')">
                             {{ __('Compras / Pagos') }}
                         </x-nav-link>
-                        <x-nav-link :href="route('reportes.clientes-frecuentes')" :active="request()->routeIs('reportes.clientes-frecuentes')">
-                            {{ __('Clientes frecuentes') }}
-                        </x-nav-link>
-                        <x-nav-link :href="route('reportes.numeros-frecuentes')" :active="request()->routeIs('reportes.numeros-frecuentes')">
-                            {{ __('Números frecuentes') }}
-                        </x-nav-link>
-                        <x-nav-link :href="route('reportes.financiero')" :active="request()->routeIs('reportes.financiero')">
-                            {{ __('Reporte Financiero') }}
-                        </x-nav-link>
+                        {{-- Los tres reportes agrupados para que el menú entre en una sola fila --}}
+                        <div class="inline-flex items-center">
+                            <x-dropdown align="left" width="48" contentClasses="py-1 bg-gray-900 border border-dorado-700">
+                                <x-slot name="trigger">
+                                    <button type="button" class="inline-flex items-center px-1 pt-1 h-16 border-b-2 text-sm font-medium leading-5 transition {{ request()->routeIs('reportes.*') ? 'border-dorado-400 text-dorado-400' : 'border-transparent text-gray-300 hover:text-dorado-300 hover:border-dorado-700' }}">
+                                        Reportes
+                                        <svg class="ms-1 h-4 w-4 fill-current" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                    </button>
+                                </x-slot>
+                                <x-slot name="content">
+                                    <a href="{{ route('reportes.clientes-frecuentes') }}" class="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-800 hover:text-dorado-300">Clientes frecuentes</a>
+                                    <a href="{{ route('reportes.numeros-frecuentes') }}" class="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-800 hover:text-dorado-300">Números frecuentes</a>
+                                    <a href="{{ route('reportes.financiero') }}" class="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-800 hover:text-dorado-300">Reporte financiero</a>
+                                </x-slot>
+                            </x-dropdown>
+                        </div>
                         <x-nav-link :href="route('ganadores.index')" :active="request()->routeIs('ganadores.index')">
                             {{ __('Ganadores') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('publicidades.index')" :active="request()->routeIs('publicidades.*')">
+                            {{ __('Publicidad') }}
                         </x-nav-link>
                     @elseif (auth()->user()->rol === 'moderador')
                         <x-nav-link :href="route('sorteos.index')" :active="request()->routeIs('sorteos.*')">
@@ -167,6 +177,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('ganadores.index')" :active="request()->routeIs('ganadores.index')">
                     {{ __('Ganadores') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('publicidades.index')" :active="request()->routeIs('publicidades.*')">
+                    📢 {{ __('Publicidad') }}
                 </x-responsive-nav-link>
             @elseif (auth()->user()->rol === 'moderador')
                 <x-responsive-nav-link :href="route('sorteos.index')" :active="request()->routeIs('sorteos.*')">
