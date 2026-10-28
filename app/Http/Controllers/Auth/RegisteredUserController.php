@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cliente;
+use App\Models\Configuracion;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
@@ -18,7 +20,7 @@ class RegisteredUserController extends Controller
 {
     public function create(): View
     {
-        return view('auth.register');
+        return view('auth.register', ['regaloBienvenida' => Configuracion::jugadasGratisRegistro()]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -78,6 +80,30 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        $regalo = $this->darRegaloBienvenida($cliente);
+
+        return redirect(route('dashboard', absolute: false))->with('exito', $regalo > 0
+            ? "🎁 ¡Bienvenido a El Billetazo! Te regalamos {$regalo} jugada(s) gratis para tu primer sorteo."
+            : '¡Bienvenido a El Billetazo!');
+    }
+
+    // Jugadas gratis de bienvenida (la cantidad la define el administrador). Cada DNI la recibe una sola vez.
+    private function darRegaloBienvenida(Cliente $cliente): int
+    {
+        $cantidad = Configuracion::jugadasGratisRegistro();
+
+        if ($cantidad === 0) {
+            return 0;
+        }
+
+        // Se marca y se suma en una sola operación: aunque lleguen dos registros a la vez, solo uno lo recibe
+        $otorgado = Cliente::whereKey($cliente->id)
+            ->whereNull('bono_bienvenida_at')
+            ->update([
+                'bono_bienvenida_at' => now(),
+                'jugadas_gratis' => DB::raw('jugadas_gratis + ' . $cantidad),
+            ]);
+
+        return $otorgado ? $cantidad : 0;
     }
 }

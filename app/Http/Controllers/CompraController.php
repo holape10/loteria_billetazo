@@ -93,12 +93,30 @@ class CompraController extends Controller
 
     public function rechazar(Compra $compra)
     {
-        if ($compra->estado_pago !== 'pendiente') {
+        $devueltas = DB::transaction(function () use ($compra) {
+            $compra = Compra::whereKey($compra->id)->lockForUpdate()->first();
+
+            if ($compra->estado_pago !== 'pendiente') {
+                return null;
+            }
+
+            $compra->update(['estado_pago' => 'rechazado']);
+
+            // Las jugadas gratis que el jugador usó en esta compra se le devuelven
+            $gratis = $compra->boletos()->where('monto', 0)->count();
+            if ($gratis > 0) {
+                $compra->cliente()->increment('jugadas_gratis', $gratis);
+            }
+
+            return $gratis;
+        });
+
+        if ($devueltas === null) {
             return back()->with('error', 'Esta compra ya fue procesada.');
         }
 
-        $compra->update(['estado_pago' => 'rechazado']);
-
-        return back()->with('exito', 'Compra rechazada.');
+        return back()->with('exito', $devueltas > 0
+            ? "Compra rechazada. Se le devolvieron {$devueltas} jugada(s) gratis al jugador."
+            : 'Compra rechazada.');
     }
 }

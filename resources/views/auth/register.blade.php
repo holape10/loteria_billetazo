@@ -1,4 +1,11 @@
 <x-guest-layout>
+    @if ($regaloBienvenida > 0)
+        <div class="mb-4 p-3 rounded-lg bg-green-50 border border-green-300 text-green-800 text-center">
+            <p class="font-bold">🎁 Regístrate y recibe {{ $regaloBienvenida }} {{ $regaloBienvenida === 1 ? 'jugada gratis' : 'jugadas gratis' }}</p>
+            <p class="text-xs mt-1">Se cargan a tu cuenta al terminar el registro.</p>
+        </div>
+    @endif
+
     <form method="POST" action="{{ route('register') }}">
         @csrf
 

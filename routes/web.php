@@ -14,6 +14,7 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\IncidenciaController;
 use App\Http\Controllers\EnVivoController;
 use App\Http\Controllers\PublicidadController;
+use App\Http\Controllers\ConfiguracionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -68,6 +69,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('compras/{compra}/aprobar', [CompraController::class, 'aprobar'])->name('compras.aprobar');
     Route::post('compras/{compra}/rechazar', [CompraController::class, 'rechazar'])->name('compras.rechazar');
     Route::post('compras/{compra}/incidencia', [IncidenciaController::class, 'store'])->name('incidencias.store');
+
+    Route::get('configuracion', [ConfiguracionController::class, 'edit'])->name('configuracion.edit');
+    Route::put('configuracion', [ConfiguracionController::class, 'update'])->name('configuracion.update');
 
     Route::resource('publicidades', PublicidadController::class)->except('show')->parameters(['publicidades' => 'publicidad']);
     Route::post('publicidades/{publicidad}/alternar', [PublicidadController::class, 'alternar'])->name('publicidades.alternar');

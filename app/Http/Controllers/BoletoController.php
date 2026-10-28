@@ -131,6 +131,12 @@ class BoletoController extends Controller
                     $cliente->decrement('jugadas_gratis', $cantidadGratisSolicitadas);
                 }
 
+                // Una compra 100% gratis queda pagada al instante: cuenta para el total de juegos del cliente
+                // (las pagadas suman recién cuando el administrador aprueba el pago)
+                if ($montoTotal == 0) {
+                    $cliente->increment('juegos', $cantidadJugadas);
+                }
+
                 return $compra;
             });
         } catch (\Throwable $e) {

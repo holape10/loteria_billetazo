@@ -113,6 +113,9 @@
                         <x-dropdown-link :href="route('profile.edit')">
                             {{ __('Profile') }}
                         </x-dropdown-link>
+                        @if (auth()->user()->esAdministrador())
+                            <x-dropdown-link :href="route('configuracion.edit')">⚙️ Configuración</x-dropdown-link>
+                        @endif
 
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
@@ -205,6 +208,9 @@
                 <x-responsive-nav-link :href="route('profile.edit')">
                     {{ __('Profile') }}
                 </x-responsive-nav-link>
+                @if (auth()->user()->esAdministrador())
+                    <x-responsive-nav-link :href="route('configuracion.edit')">⚙️ Configuración</x-responsive-nav-link>
+                @endif
 
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf

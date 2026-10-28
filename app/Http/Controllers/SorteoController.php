@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Boleto;
+use App\Models\Cliente;
 use App\Models\Sorteo;
 use App\Services\SorteoEnVivoService;
 use Illuminate\Http\Request;
@@ -271,60 +273,50 @@ class SorteoController extends Controller
             'numero_6' => $numerosGanadores[5],
         ]);
 
-        $boletos = $sorteo->boletos()->whereHas('compra', function ($q) {
-            $q->where('estado_pago', 'pagado');
-        })->get();
+        $boletos = $sorteo->boletos()
+            ->whereHas('compra', fn ($q) => $q->where('estado_pago', 'pagado'))
+            ->get(['id', 'cliente_id', 'numero_1', 'numero_2', 'numero_3', 'numero_4', 'numero_5', 'numero_6']);
 
+        // Aciertos de cada jugada, agrupados: [aciertos => [ids de boletos]]
+        $porAciertos = [];
         foreach ($boletos as $boleto) {
-            $numerosBoleto = [
+            $aciertos = count(array_intersect([
                 $boleto->numero_1, $boleto->numero_2, $boleto->numero_3,
                 $boleto->numero_4, $boleto->numero_5, $boleto->numero_6,
-            ];
-
-            $boleto->update([
-                'aciertos' => count(array_intersect($numerosBoleto, $numerosGanadores)),
-            ]);
+            ], $numerosGanadores));
+            $porAciertos[$aciertos][] = $boleto->id;
         }
 
-        $ganadoresMayor = $boletos->fresh()->where('aciertos', 6);
+        // Una consulta por grupo de aciertos (en vez de una por jugada)
+        foreach ($porAciertos as $aciertos => $ids) {
+            Boleto::whereIn('id', $ids)->update(['aciertos' => $aciertos]);
+        }
 
-        if ($ganadoresMayor->count() > 0) {
-            $premioCadaUno = round($sorteo->premio_mayor / $ganadoresMayor->count(), 2);
-            foreach ($ganadoresMayor as $boleto) {
-                $boleto->update(['premio_ganado' => $premioCadaUno]);
-            }
-        } else {
-            $ganadoresCinco = $boletos->fresh()->where('aciertos', 5);
-            if ($ganadoresCinco->count() > 0) {
-                $premioCadaUno = round($sorteo->premio_cinco_aciertos / $ganadoresCinco->count(), 2);
-                foreach ($ganadoresCinco as $boleto) {
-                    $boleto->update(['premio_ganado' => $premioCadaUno]);
-                }
-            }
+        // Cada categoría se paga por separado (como dicen los términos): si alguien gana el pozo,
+        // los demás igual cobran sus 5, 4 o 3 aciertos y su jugada gratis por 2 aciertos.
+        // Si hay varios ganadores en una categoría, el premio se divide entre ellos.
+        $premios = [
+            6 => (float) $sorteo->premio_mayor,
+            5 => (float) $sorteo->premio_cinco_aciertos,
+            4 => (float) $sorteo->premio_cuatro_aciertos,
+            3 => (float) $sorteo->premio_tres_aciertos,
+        ];
 
-            $ganadoresCuatro = $boletos->fresh()->where('aciertos', 4);
-            if ($ganadoresCuatro->count() > 0) {
-                $premioCadaUno = round($sorteo->premio_cuatro_aciertos / $ganadoresCuatro->count(), 2);
-                foreach ($ganadoresCuatro as $boleto) {
-                    $boleto->update(['premio_ganado' => $premioCadaUno]);
-                }
+        foreach ($premios as $aciertos => $premio) {
+            $ids = $porAciertos[$aciertos] ?? [];
+            if ($ids && $premio > 0) {
+                Boleto::whereIn('id', $ids)->update(['premio_ganado' => round($premio / count($ids), 2)]);
             }
+        }
 
-            $ganadoresTres = $boletos->fresh()->where('aciertos', 3);
-            if ($ganadoresTres->count() > 0) {
-                $premioCadaUno = round($sorteo->premio_tres_aciertos / $ganadoresTres->count(), 2);
-                foreach ($ganadoresTres as $boleto) {
-                    $boleto->update(['premio_ganado' => $premioCadaUno]);
-                }
-            }
+        // 2 aciertos: una jugada gratis por cada jugada ganadora
+        $idsDos = $porAciertos[2] ?? [];
+        if ($idsDos) {
+            Boleto::whereIn('id', $idsDos)->update(['jugada_gratis_ganada' => true]);
 
-            $ganadoresDos = $boletos->fresh()->where('aciertos', 2);
-            if ($ganadoresDos->count() > 0) {
-                foreach ($ganadoresDos as $boleto) {
-                    $boleto->update(['jugada_gratis_ganada' => true]);
-                    $boleto->cliente->increment('jugadas_gratis');
-                }
-            }
+            $boletos->whereIn('id', $idsDos)->countBy('cliente_id')->each(
+                fn ($cantidad, $clienteId) => Cliente::whereKey($clienteId)->increment('jugadas_gratis', $cantidad)
+            );
         }
 
         $sorteo->update(['estado' => 'cerrado', 'cerrado_en' => now()]);
