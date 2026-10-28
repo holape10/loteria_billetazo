@@ -76,7 +76,7 @@
                                                         <li>
                                                             <span class="font-semibold">{{ $g->cliente->nombre }}</span>
                                                             — {{ $g->aciertos }} aciertos
-                                                            — S/ {{ number_format($g->premio_ganado, 2) }}
+                                                            — {{ $g->premio_ganado ? 'S/ ' . number_format($g->premio_ganado, 2) : '🎟️ Jugada gratis' }}
                                                         </li>
                                                     @endforeach
                                                 </ul>
